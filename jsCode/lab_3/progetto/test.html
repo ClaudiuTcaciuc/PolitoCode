@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
+  <title>Film Library</title>
+</head>
+<body>
+  <div class="container mt-3">
+		<h2>Film Table</h2>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Nome</th>
+					<th>Data</th>
+					<th>Rating</th>
+					<th>Favorite</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="film-name">Film 1</td>
+					<td>01/01/2022</td>
+					<td>4</td>
+					<td><input type="checkbox" class="form-check-input favorite-checkbox"></td>
+				</tr>
+				<tr>
+					<td class="film-name">Film 2</td>
+					<td>02/02/2022</td>
+					<td>3</td>
+					<td><input type="checkbox" class="form-check-input favorite-checkbox"> Favorite</td>
+				</tr>
+				<tr>
+					<td class="film-name">Film 3</td>
+					<td>03/03/2022</td>
+					<td>5</td>
+					<td><input type="checkbox" class="form-check-input favorite-checkbox"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Bootstrap JS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js" integrity="sha512-od9X2Qz0SPgsOaVQZuzyR/wInC7riLhYq3Vr5d6+oiX5+r5u6F0J4Mwwg3chY/EY29e+wtHcRJyOWSg8Ktdz1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+	<script>
+		// Seleziona tutte le checkbox con classe "favorite-checkbox"
+		const checkboxes = document.querySelectorAll('.favorite-checkbox');
+
+		checkboxes.forEach((checkbox) => {
+			// Aggiungi un listener per l'evento "change"
+			checkbox.addEventListener('change', (event) => {
+				// Se la checkbox è selezionata, cambia il colore del nome del film a verde, altrimenti a nero
+				if (event.target.checked) {
+					event.target.closest('tr').querySelector('.film-name').classList.add('text-danger');
+				} else {
+					event.target.closest('tr').querySelector('.film-name').classList.remove('text-danger');
+				}
+			});
+		});
+	</script>
+</body>
+</html>
