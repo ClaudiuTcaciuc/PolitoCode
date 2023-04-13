@@ -12,8 +12,10 @@ def readData(filename):
 def pca_solver(data, label, m):
     mu = np.mean(data, axis=0)
     data_centered = data - mu
+    print(mu)
     # Compute the covariance matrix
     cov = np.cov(data_centered.T)
+    print(cov)
     # Compute the eigenvalues and eigenvectors of the covariance matrix
     eigenvalues, eigenvectors = np.linalg.eig(cov)
     # Sort the eigenvalues and eigenvectors in descending order
