@@ -23,18 +23,20 @@ def split_data(data, label, seed=0):
 
 def multivariate_gaussian_classifier(data_train, label_train, data_test, label_test):
     # compute the mean and the covariance matrix for each class
-    score = np.zeros((3, data_test.shape[1]))
-    print(score.shape)
+    mean = []
+    cov = []
+    score = []
     for i in np.unique(label_train):
-        mean = np.mean(data_train[:, label_train == i], axis=1)
-        cov = np.cov(data_train[:, label_train == i])
-    
+        mean.append(np.mean(data_train[:, label_train == i], axis=1))
+        centered_data = data_train[:, label_train == i] - mean[i].reshape(-1, 1)
+        cov.append(np.dot(centered_data, centered_data.T)/centered_data.shape[1])
+        score.append(np.exp(log_likelihood(data_test, mean[i], cov[i]))/3)
     for i in np.unique(label_train):
-        print("mean of class", i, "is\n", mean)
-        print("covariance matrix of class", i, "is\n", cov)
-
+        print("mean of class {}: \n{}".format(i, mean[i]))
+        print("cov of class {}: \n{}".format(i, cov[i]))
+    score_sol = np.load("Solution/SJoint_MVG.npy")
+    print("diff from sol: {}".format(np.sum(np.abs(score_sol - score))))
     
-
 def log_likelihood(x, mean, cov):
     # compute the log likelihood of x given the multivariate Gaussian distribution with mean and cov
     return log_pdf_multivariate_gaussian(x, mean, cov)
@@ -49,7 +51,8 @@ def log_pdf_multivariate_gaussian(x, mean, sigma):
     term_1 = -size/2 * np.log(2*np.pi)
     term_2 = -1/2 * sign * sigma_det
     term_3 = -1/2 * np.sum(centered_data.T.dot(sigma_inv) * centered_data.T, axis=1)
-    return term_1 + term_2 + term_3
+    exp_term = term_1+term_2+term_3
+    return exp_term
 
 if __name__ == "__main__":
     data, label = load_iris()
