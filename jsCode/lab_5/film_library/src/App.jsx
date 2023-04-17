@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {ListGroup, Nav, Col, Container, Row, Button, Form, Table, Navbar } from 'react-bootstrap';
+import {ListGroup, Nav, Col, Container, Row, Button, Form, Table, Navbar, Modal } from 'react-bootstrap';
 import { useState } from 'react';
 import './style.css';
 //define the header of the body
@@ -53,6 +53,9 @@ class filmLibrary {
   updateFavorite(ID_film, favorite){
       let index = this.films.findIndex(film => film.ID_film === ID_film);
       this.films[index].favorite = favorite;
+  }
+  getLastID(){
+      return this.films[this.films.length - 1].ID_film;
   }
 }
 
@@ -200,9 +203,9 @@ function SideBar_Filter(props){
   );
 }
 
-function My_Table(pros){
+function My_Table(props){
   let film_lib = new filmLibrary();
-  let filter_to_use = pros.filter_to_use;
+  let filter_to_use = props.use_filter;
   if (filter_to_use == "All")
     film_lib = filterAll();
   else if (filter_to_use == "Favorite")
@@ -229,36 +232,80 @@ function My_Table(pros){
   );
 }
 
-function My_Footer(){
+function My_Footer(props){
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+  const handleAddFilm = (event) => {
+    let film_to_add = event.currentTarget
+    if(film_to_add.elements["title"].value !=""){
+      handleClose();
+      let new_film = new film(
+        film_library.getLastID() + 1,
+        film_to_add.elements["title"].value,
+        film_to_add.elements["favorite"].checked,
+        film_to_add.elements["date"].value,
+        parseInt(film_to_add.elements["rating"].value),
+      )
+      console.log(new_film);
+      props.new_film(() => film_library.populateLibrary(new_film));
+    }
+  }
   return (
-    <Button variant="primary" className='fixed-bottom-right'>
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="25" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-      </svg>
-    </Button>
+    <Container fluid className="bg-dark text-white">
+      <Button variant="primary" className='fixed-bottom-right' onClick={handleShow}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="25" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+        </svg>
+      </Button>
+      <Modal show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Add New Film</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleAddFilm}>
+            <Form.Group>
+              <Form.Label>Film Title</Form.Label>
+              <Form.Control type="text" placeholder="Film Title" id='title'/>
+              <Form.Label>Watch Date</Form.Label>
+              <Form.Control type="date" id='date'/>
+              <Form.Label>Rating</Form.Label>
+              <Form.Control type="number" label="Rating" min={0} max={5} placeholder="min = 0 max = 5" id = "rating"/>
+              <Form.Check type="checkbox" label="Favorite" id = "favorite"/>
+            </Form.Group>
+            <Form.Group >
+            <Button variant="primary" type="submit" > Add New Film </Button>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    </Container>
   );
 }
 
-function My_Main(){
-  const [filter, setFilter] = useState("All");
+function My_Main(props){
+  if (props.new_film_from_form != null)
+    props.new_films_to_lib_from_form(() => null);
   return (
     <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'scroll initial' }}>
       <div style={{ flex: '0 0 300px' }}>
-        <SideBar_Filter update_filter={setFilter}/>
+        <SideBar_Filter update_filter={props.set_filter}/>
       </div>
       <div style={{ flex: '1 1 300px' }}>
-        <My_Table filter_to_use= {filter}/>
+        <My_Table use_filter = {props.use_filter}/>
       </div>
     </div>
   );
 }
 
 function App() {
+  const [filter, setFilter] = useState("All");
+  const [new_film, addNewFilm] = useState(null);
   return (
     <div>
       <My_Header/>
-      <My_Main/>
-      <My_Footer/>
+      <My_Main use_filter={filter} set_filter={setFilter} new_film_from_form={new_film} new_films_to_lib_from_form={addNewFilm}/>
+      <My_Footer new_film={addNewFilm}/>
     </div>
   )
 }
