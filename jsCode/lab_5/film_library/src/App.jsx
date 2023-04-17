@@ -50,6 +50,10 @@ class filmLibrary {
   getRatedFilms(){
       return this.films.filter(film => film.rating !== null).sort((a,b) => b.rating - a.rating);
   }
+  updateFavorite(ID_film, favorite){
+      let index = this.films.findIndex(film => film.ID_film === ID_film);
+      this.films[index].favorite = favorite;
+  }
 }
 
 
@@ -93,46 +97,167 @@ function My_Header(){
   );
 }
 
-function SideBar_Filter(){
-  // make a filter under the navbar
-  const alertClicked = () => {
-    
-  };
+function filterAll(){
+  let film_lib = new filmLibrary();
+  for (let film of film_library.films){
+    film_lib.populateLibrary(film);
+  }
+  return film_lib;
+}
+
+function filterFavorite(){
+  let film_lib = new filmLibrary();
+  for (let film of film_library.films){
+    if (film.favorite === true){
+      film_lib.populateLibrary(film);
+    }
+  }
+  return film_lib;
+}
+
+function filterBestRated(){
+  let film_lib = new filmLibrary();
+  for (let film of film_library.films){
+    if (film.rating === 5){
+      film_lib.populateLibrary(film);
+    }
+  }
+  return film_lib;
+}
+
+function filterSeenLastMonth(){
+  let film_lib = new filmLibrary();
+  let last_month = dayjs().month(dayjs().month() - 1);
+  for (let film of film_library.films){
+    if (film.date_watch !== null && film.date_watch.month() === last_month.month()){
+      film_lib.populateLibrary(film);
+    }
+  }
+  return film_lib;
+}
+
+function filterUnseen(){
+  let film_lib = new filmLibrary();
+  for (let film of film_library.films){
+    if (dayjs(film.date_watch).isValid() === false){
+      film_lib.populateLibrary(film);
+    }
+  }
+  return film_lib;
+}
+
+function Populate_TablefromLibrary(film_element){
+  const {e} = film_element;
+  const [checked, setChecked] = useState(e.favorite);
+  const favorite_checkbox = <Form.Check type="checkbox" label="Favorite" checked={checked} onChange={() => setChecked(!checked)} />;
+  let date_watch = e.date_watch
+  if(dayjs(e.date_watch).isValid() === false)
+      date_watch = "not watched";
+  else
+      date_watch = dayjs(e.date_watch).format("DD/MM/YYYY");
+  let rating = e.rating;
+  let rating_string = "";
+  for(let i = 0; i < rating; i++){
+    rating_string += "★";
+  }
+  for(let i = 0; i < 5-rating; i++){
+    rating_string += "☆";
+  }
+  let titleColor = "text-dark";
+  if (checked){
+    film_library.films[e.ID_film-1].favorite = true;
+    titleColor = "text-danger";
+  }
+  else{
+    film_library.films[e.ID_film-1].favorite = false;
+  }
   return (
-    <Container fluid="col-3">
-      <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'scroll initial' }}>
-        <div className='bg-light' style={{ flex: '0 0 300px' }}>
-          <div style={{ padding: '10px' }}>
-            <ListGroup variant='flush' defaultActiveKey="#link1">
-              <ListGroup.Item className='custom-listgroup' action href="#link1" onClick={alertClicked}> All </ListGroup.Item>
-              <ListGroup.Item className='custom-listgroup' action href="#link2" onClick={alertClicked}> Favorite </ListGroup.Item>
-              <ListGroup.Item className='custom-listgroup' action href="#link3" onClick={alertClicked}> Best Rated </ListGroup.Item>
-              <ListGroup.Item className='custom-listgroup' action href="#link4" onClick={alertClicked}> Seen Last Month </ListGroup.Item>
-              <ListGroup.Item className='custom-listgroup' action href="#link5" onClick={alertClicked}> Unseen </ListGroup.Item>
-            </ListGroup>
-          </div>
+    <tr>
+      <td><span className={titleColor}>{e.title}</span></td>
+      <td>{favorite_checkbox}</td>
+      <td>{date_watch}</td>
+      <td>{rating_string}</td>
+    </tr>
+  );
+}
+
+function SideBar_Filter(props){
+  let update_filter = props.update_filter;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'scroll initial' }}>
+      <div className='bg-light' style={{ flex: '0 0 300px' }}>
+        <div style={{ padding: '10px' }}>
+          <ListGroup variant='flush' defaultActiveKey="#link1">
+            <ListGroup.Item className='custom-listgroup' action href="#link1" onClick={() => {update_filter(() =>"All")}}> All </ListGroup.Item>
+            <ListGroup.Item className='custom-listgroup' action href="#link2" onClick={() => {update_filter(() =>"Favorite")}}> Favorite </ListGroup.Item>
+            <ListGroup.Item className='custom-listgroup' action href="#link3" onClick={() => {update_filter(() =>"bestRated")}}> Best Rated </ListGroup.Item>
+            <ListGroup.Item className='custom-listgroup' action href="#link4" onClick={() => {update_filter(() =>"seenLastMonth")}}> Seen Last Month </ListGroup.Item>
+            <ListGroup.Item className='custom-listgroup' action href="#link5" onClick={() => {update_filter(() =>"Unseen")}}> Unseen </ListGroup.Item>
+          </ListGroup>
         </div>
       </div>
-    </Container>
+    </div>
+  );
+}
+
+function My_Table(pros){
+  let film_lib = new filmLibrary();
+  let filter_to_use = pros.filter_to_use;
+  if (filter_to_use == "All")
+    film_lib = filterAll();
+  else if (filter_to_use == "Favorite")
+    film_lib = filterFavorite();
+  else if (filter_to_use == "bestRated")
+    film_lib = filterBestRated();
+  else if (filter_to_use == "seenLastMonth")
+    film_lib = filterSeenLastMonth();
+  else if (filter_to_use == "Unseen")
+    film_lib = filterUnseen();
+  return (
+    <div>
+      <h1 className="mb-2" id="filter-title">All</h1>
+      <Table>
+        <tbody id="table-body">
+          {
+            film_lib.films.map((e) => {
+              return <Populate_TablefromLibrary e={e} key={e.ID_film}/>
+            })
+          }
+        </tbody>
+      </Table>
+    </div>
   );
 }
 
 function My_Footer(){
   return (
     <Button variant="primary" className='fixed-bottom-right'>
-      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="25" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="25" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
       </svg>
     </Button>
   );
 }
 
-function App() {
+function My_Main(){
+  const [filter, setFilter] = useState("All");
+  return (
+    <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'scroll initial' }}>
+      <div style={{ flex: '0 0 300px' }}>
+        <SideBar_Filter update_filter={setFilter}/>
+      </div>
+      <div style={{ flex: '1 1 300px' }}>
+        <My_Table filter_to_use= {filter}/>
+      </div>
+    </div>
+  );
+}
 
+function App() {
   return (
     <div>
       <My_Header/>
-      <SideBar_Filter/>
+      <My_Main/>
       <My_Footer/>
     </div>
   )
