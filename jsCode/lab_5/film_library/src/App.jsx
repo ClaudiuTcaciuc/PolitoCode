@@ -237,6 +237,7 @@ function My_Footer(props){
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const handleAddFilm = (event) => {
+    event.preventDefault();
     let film_to_add = event.currentTarget
     if(film_to_add.elements["title"].value !=""){
       handleClose();

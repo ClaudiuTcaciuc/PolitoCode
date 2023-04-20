@@ -44,7 +44,8 @@ def mvg_log(log_score, label_test):
     marginal_log_score = scipy.special.logsumexp(log_score, axis=0)
     posterior_log_score = log_score - marginal_log_score
     posterior_score = np.exp(posterior_log_score)
-    accuracy = np.sum(np.argmax(posterior_score, axis=0) == label_test)/label_test.shape[0]
+    acc = np.argmax(posterior_score, axis=0) == label_test
+    accuracy = np.sum(acc)/label_test.shape[0]
     err_rate = 1 - accuracy
     return err_rate
 
@@ -86,8 +87,8 @@ def k_cross_validation(data, label, k=1):
     for i in range (0, len_element, k):
         data_test = data[:, i:i+k]
         label_test = label[i:i+k]
-        data_train = np.delete(data, np.s_[i:i+k], axis=1)
-        label_train = np.delete(label, np.s_[i:i+k], axis=0)
+        data_train = np.delete(data, range(i,i+k), axis=1)
+        label_train = np.delete(label, range(i,i+k), axis=0)
         # multivariate gaussian classifier
         for j in np.unique(label_train):
             mean = np.mean(data_train[:, label_train == j], axis=1)
