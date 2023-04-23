@@ -1,0 +1,14 @@
+/home/seven/programmazioneDiSistema/target/debug/deps/anstream-c6474eb442a1fe5e.rmeta: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/mod.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/strip.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/wincon.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/buffer.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/macros.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/auto.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lockable.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/raw.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/strip.rs
+
+/home/seven/programmazioneDiSistema/target/debug/deps/anstream-c6474eb442a1fe5e.d: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/mod.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/strip.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/wincon.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/buffer.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/macros.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/auto.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lockable.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/raw.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/strip.rs
+
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lib.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/mod.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/strip.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/adapter/wincon.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/buffer.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/macros.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/auto.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/lockable.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/raw.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstream-0.3.0/src/strip.rs:

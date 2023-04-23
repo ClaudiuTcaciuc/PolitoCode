@@ -1,0 +1,11 @@
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/anstyle_parse-8108e06ab49dbaf2.rmeta: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/params.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/mod.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/definitions.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/table.rs
+
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/libanstyle_parse-8108e06ab49dbaf2.rlib: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/params.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/mod.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/definitions.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/table.rs
+
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/anstyle_parse-8108e06ab49dbaf2.d: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/params.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/mod.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/definitions.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/table.rs
+
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/lib.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/params.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/mod.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/definitions.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/anstyle-parse-0.2.0/src/state/table.rs:

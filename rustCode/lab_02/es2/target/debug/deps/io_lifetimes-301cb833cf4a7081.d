@@ -1,0 +1,12 @@
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/io_lifetimes-301cb833cf4a7081.rmeta: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/portability.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/traits.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/example_ffi.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/raw.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/views.rs
+
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/libio_lifetimes-301cb833cf4a7081.rlib: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/portability.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/traits.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/example_ffi.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/raw.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/views.rs
+
+/home/seven/programmazioneDiSistema/lab02/target/debug/deps/io_lifetimes-301cb833cf4a7081.d: /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/lib.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/portability.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/traits.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/example_ffi.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/raw.rs /home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/views.rs
+
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/lib.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/portability.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/traits.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/example_ffi.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/raw.rs:
+/home/seven/.cargo/registry/src/github.com-1ecc6299db9ec823/io-lifetimes-1.0.10/src/views.rs:
