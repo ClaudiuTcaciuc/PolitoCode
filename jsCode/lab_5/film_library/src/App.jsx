@@ -206,19 +206,30 @@ function SideBar_Filter(props){
 function My_Table(props){
   let film_lib = new filmLibrary();
   let filter_to_use = props.use_filter;
-  if (filter_to_use == "All")
+  let filter_name = "All";
+  if (filter_to_use == "All"){
     film_lib = filterAll();
-  else if (filter_to_use == "Favorite")
+    filter_name = "All";
+  }
+  else if (filter_to_use == "Favorite"){
     film_lib = filterFavorite();
-  else if (filter_to_use == "bestRated")
+    filter_name = "Favorite";
+  }
+  else if (filter_to_use == "bestRated"){
     film_lib = filterBestRated();
-  else if (filter_to_use == "seenLastMonth")
+    filter_name = "Best Rated";
+  }
+  else if (filter_to_use == "seenLastMonth"){
     film_lib = filterSeenLastMonth();
-  else if (filter_to_use == "Unseen")
+    filter_name = "Seen Last Month";
+  }
+  else if (filter_to_use == "Unseen"){
     film_lib = filterUnseen();
+    filter_name = "Unseen";
+  }
   return (
     <div>
-      <h1 className="mb-2" id="filter-title">All</h1>
+      <h1 className="mb-2" id="filter-title">{filter_name}</h1>
       <Table>
         <tbody id="table-body">
           {
@@ -236,17 +247,22 @@ function My_Footer(props){
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [rating, setRating] = useState(0);
+  const [favorite, setFavorite] = useState(false);
+
   const handleAddFilm = (event) => {
     event.preventDefault();
-    let film_to_add = event.currentTarget
-    if(film_to_add.elements["title"].value !=""){
+    if(title !=""){
       handleClose();
       let new_film = new film(
         film_library.getLastID() + 1,
-        film_to_add.elements["title"].value,
-        film_to_add.elements["favorite"].checked,
-        film_to_add.elements["date"].value,
-        parseInt(film_to_add.elements["rating"].value),
+        title,
+        favorite,
+        dayjs(date),
+        rating,
       )
       console.log(new_film);
       props.new_film(() => film_library.populateLibrary(new_film));
@@ -267,12 +283,12 @@ function My_Footer(props){
           <Form onSubmit={handleAddFilm}>
             <Form.Group>
               <Form.Label>Film Title</Form.Label>
-              <Form.Control type="text" placeholder="Film Title" id='title'/>
+              <Form.Control type="text" placeholder="Film Title" value={title} onChange={ev => setTitle(ev.target.value)}/>
               <Form.Label>Watch Date</Form.Label>
-              <Form.Control type="date" id='date'/>
+              <Form.Control type="date" value={date} onChange={ev => setDate(ev.target.value)}/>
               <Form.Label>Rating</Form.Label>
-              <Form.Control type="number" label="Rating" min={0} max={5} placeholder="min = 0 max = 5" id = "rating"/>
-              <Form.Check type="checkbox" label="Favorite" id = "favorite"/>
+              <Form.Control type="number" label="Rating" min={0} max={5} placeholder="min = 0 max = 5" onChange={ev => setRating(ev.target.value)}/>
+              <Form.Check type="checkbox" label="Favorite" value={favorite} onChange={ev => setFavorite(ev.target.value)}/>
             </Form.Group>
             <Form.Group >
             <Button variant="primary" type="submit" > Add New Film </Button>
