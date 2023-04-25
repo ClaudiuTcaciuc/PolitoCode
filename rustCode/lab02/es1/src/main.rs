@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::os::raw::{c_char, c_int, c_long, c_float};
+use std::{os::raw::{c_char, c_int, c_long, c_float}, io::Read};
 #[derive(Parser)]
 struct Args {
     file_name: String,
@@ -53,12 +53,15 @@ struct ExportData {
 fn main() {
     let args = Args::parse();
     let file_name = args.file_name;
-    let bytes = std::fs::read(file_name).unwrap();
+    let mut file = std::fs::File::open(file_name).unwrap();
     let mut data:[ExportData; 100] = unsafe { std::mem::zeroed() };
+    const SIZE: usize = std::mem::size_of::<ExportData>();
     for i in 0..100{
-        data[i] = unsafe { std::ptr::read(bytes.as_ptr().add(i * std::mem::size_of::<ExportData>()) as *const ExportData) };
-    }
-    for i in 0..100{
+        let mut buf:[u8; SIZE] = [0; SIZE];
+        file.read_exact(&mut buf).unwrap();
+        data[i] = unsafe {
+            std::mem::transmute(buf)
+        };
         println!("{:?}", data[i]);
     }
 }
