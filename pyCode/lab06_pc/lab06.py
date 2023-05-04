@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import scipy
 
 def load_data():
     lInf = []
@@ -55,6 +56,42 @@ def build_unite_vocabulary(inferno, purgatorio, paradiso):
         vocabulary[word] = (freq_inf, freq_pur, freq_par)
     return vocabulary
 
+def log_likelihood_cantica (voc_train, data_test):
+    log_likelihood = []
+    for line in data_test:
+        log_likelihood_tercet = [0, 0, 0]
+        for word in line.split():
+            if word in voc_train:
+                log_likelihood_tercet += np.log(voc_train[word])
+        log_likelihood.append(log_likelihood_tercet)
+    return log_likelihood
+
+def build_score_matrix (log_likelihood_inf, log_likelihood_pur, log_likelihood_par):
+    
+    score_inf = np.array(log_likelihood_inf).transpose()
+    score_pur = np.array(log_likelihood_pur).transpose()
+    score_par = np.array(log_likelihood_par).transpose()
+    label_inf = np.zeros(score_inf.shape[1])
+    label_pur = np.ones(score_pur.shape[1])
+    label_par = np.ones(score_par.shape[1]) * 2
+    err_inf = mvg_log(score_inf, label_inf)
+    err_pur = mvg_log(score_pur, label_pur)
+    err_par = mvg_log(score_par, label_par)
+    print("Accuracy for Inferno: ", 1-err_inf)
+    print("Accuracy for Purgatorio: ", 1-err_pur)
+    print("Accuracy for Paradiso: ", 1-err_par)
+
+def mvg_log(log_score, label_test):
+    log_score = log_score + np.log(1/3)
+    marginal_log_score = scipy.special.logsumexp(log_score, axis=0)
+    posterior_log_score = log_score - marginal_log_score
+    posterior_score = np.exp(posterior_log_score)
+    acc = np.argmax(posterior_score, axis=0) == label_test
+    accuracy = np.sum(acc)/label_test.shape[0]
+    err_rate = 1 - accuracy
+
+    return err_rate
+    
 if __name__ == '__main__':
 
     # Load the tercets and split the lists in training and test lists
@@ -68,3 +105,9 @@ if __name__ == '__main__':
     # Create the vocabulary
     voc_cantica = build_unite_vocabulary(lInf_train, lPur_train, lPar_train)
     
+    # Compute the log-likelihood of the test data
+    log_likelihood_inf = log_likelihood_cantica(voc_cantica, lInf_evaluation)
+    log_likelihood_pur = log_likelihood_cantica(voc_cantica, lPur_evaluation)
+    log_likelihood_par = log_likelihood_cantica(voc_cantica, lPar_evaluation)
+    
+    build_score_matrix(log_likelihood_inf, log_likelihood_pur, log_likelihood_par)
