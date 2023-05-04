@@ -56,15 +56,16 @@ def build_unite_vocabulary(inferno, purgatorio, paradiso):
         vocabulary[word] = (freq_inf, freq_pur, freq_par)
     return vocabulary
 
-def log_likelihood_cantica (voc_train, data_test):
+def log_likelihood_cantica(voc_train, data_test):
     log_likelihood = []
     for line in data_test:
-        log_likelihood_tercet = [0, 0, 0]
-        for word in line.split():
-            if word in voc_train:
-                log_likelihood_tercet += np.log(voc_train[word])
+        log_likelihood_tercet = [0,0,0]
+        words = set(line.split())
+        for word in words.intersection(voc_train.keys()):
+            log_likelihood_tercet += np.log(voc_train[word])
         log_likelihood.append(log_likelihood_tercet)
     return log_likelihood
+
 
 def build_score_matrix (log_likelihood_inf, log_likelihood_pur, log_likelihood_par):
     
