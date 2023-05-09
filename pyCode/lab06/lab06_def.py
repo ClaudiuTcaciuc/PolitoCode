@@ -88,13 +88,14 @@ def calculate_accuracy (log_score, label_test, number_of_classes=3):
     acc = np.argmax(posterior_score, axis=0) == label_test
     return np.sum(acc)/label_test.shape[0]
 
-def binary_prediction (log_likelihood, class_one, class_two):
+def binary_prediction (log_likelihood_one, log_likelihood_two, class_one, class_two):
     #select the rows of the matrix corresponding to the two classes
-    score = np.array(log_likelihood)
-    score = score[:, [class_one, class_two]]
-    score = score.transpose()
-    label_test = np.ones(score.shape[1])*class_one
-    return calculate_accuracy(score, label_test, 2)
+    score = np.array(log_likelihood_one + log_likelihood_two)
+    score_binary = score[:, [class_one, class_two]].transpose()
+    label_test = np.concatenate((np.ones(len(log_likelihood_one))*class_one, np.ones(len(log_likelihood_two))*class_two))
+    label_test[label_test == class_one] = 0
+    label_test[label_test == class_two] = 1
+    return calculate_accuracy(score_binary, label_test, 2)
 
 if __name__ == '__main__':
     Inferno, Purgatorio, Paradiso = load_data()
@@ -116,9 +117,10 @@ if __name__ == '__main__':
     paradiso_accuracy = predict_class(paradiso_likelihoods, 2)
     print("Paradiso accuracy: ", paradiso_accuracy)
     
-    infero_paradiso_accuracy = binary_prediction(inferno_likelihoods, 0, 2)
+    infero_paradiso_accuracy = binary_prediction(inferno_likelihoods, paradiso_likelihoods, 0, 2)
     print("Inferno vs Paradiso accuracy: ", infero_paradiso_accuracy)
-    inferno_purgatorio_accuracy = binary_prediction(inferno_likelihoods, 0, 1)
+    inferno_purgatorio_accuracy = binary_prediction(inferno_likelihoods, purgatorio_likelihoods, 0, 1)
     print("Inferno vs Purgatorio accuracy: ", inferno_purgatorio_accuracy)
-    purgatorio_paradiso_accuracy = binary_prediction(purgatorio_likelihoods, 1, 2)
+    purgatorio_paradiso_accuracy = binary_prediction(purgatorio_likelihoods, paradiso_likelihoods, 1, 2)
     print("Purgatorio vs Paradiso accuracy: ", purgatorio_paradiso_accuracy)
+    
