@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-import scipy
+import scipy.special
 def pretty_print_dict(obj: dict):
   import json
   print(json.dumps(obj, indent=4))
@@ -28,13 +28,14 @@ def load_data ():
     
     return list_inferno, list_purgatorio, list_paradiso
 
-def split_data (list, n):
-    data_train, data_test = [], []
-    for i in range (len(list)):
+def split_data (lines, n):
+    data_train = []
+    data_test = []
+    for i, line in enumerate(lines):
         if i % n == 0:
-            data_test.append(list[i])
+            data_test.append(line)
         else:
-            data_train.append(list[i])
+            data_train.append(line)
     return data_train, data_test
 
 def build_vocabulary (list):
@@ -62,9 +63,9 @@ def build_unite_vocabulary(inferno, purgatorio, paradiso):
         vocabulary_train[word] = [(count_voc_inferno/sum(vocabulary_inferno.values())), (count_voc_purgatorio/sum(vocabulary_purgatorio.values())), (count_voc_paradiso/sum(vocabulary_paradiso.values()))]
     return vocabulary_train
 
-def predict_likelihood(text, vocab_train):
+def predict_likelihood(terzina, vocab_train):
     log_likelihoods = np.zeros(3)
-    for word in text.split():
+    for word in terzina.split():
         if word in vocab_train:
             log_likelihoods += np.log(vocab_train[word])
     return log_likelihoods
@@ -97,7 +98,7 @@ def binary_prediction (log_likelihood_one, log_likelihood_two, class_one, class_
     label_test[label_test == class_two] = 1
     return calculate_accuracy(score_binary, label_test, 2)
 
-if __name__ == '__main__':
+def main():
     Inferno, Purgatorio, Paradiso = load_data()
     
     data_train_inferno, data_test_inferno = split_data(Inferno, 4)
@@ -123,4 +124,6 @@ if __name__ == '__main__':
     print("Inferno vs Purgatorio accuracy: ", inferno_purgatorio_accuracy)
     purgatorio_paradiso_accuracy = binary_prediction(purgatorio_likelihoods, paradiso_likelihoods, 1, 2)
     print("Purgatorio vs Paradiso accuracy: ", purgatorio_paradiso_accuracy)
-    
+
+if __name__ == '__main__':
+    main()
