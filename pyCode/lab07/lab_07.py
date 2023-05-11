@@ -57,6 +57,7 @@ def logreg_obj_v2(v, data, label, lambda_):
     loss = np.logaddexp(0, -label * z)
     reg = lambda_ / 2 * np.dot(w.T, w)
     J = np.sum(loss) / n + reg
+    print(f"J: {J}")
     return J
 
 if __name__ == '__main__':
@@ -71,10 +72,6 @@ if __name__ == '__main__':
     data_train_centered = (data_train - np.mean(data_train, axis=1).reshape(-1, 1))/np.std(data_train, axis=1).reshape(-1, 1)
     # test gradient approximation
     x0_iris = np.zeros(data_train.shape[0] + 1)
-    res_iris = opt.fmin_l_bfgs_b(logreg_obj_v2, x0_iris, args=(data_train_centered, label_train, 1), approx_grad=True, iprint=0)
+    res_iris = opt.fmin_l_bfgs_b(logreg_obj_v2, x0_iris, args=(data_train_centered, label_train, 1e-6), approx_grad=True, iprint=0)
     print(f"res_iris with approx_grad:\n{res_iris}")
     
-    res_test = logreg_obj_v2(np.ones(2+1), np.array([[1, 2], [3, 4]]), np.array([1, -1]), 0.1)
-    print(f"res_test:\n{res_test}")
-    
-    # https://towardsdatascience.com/logistic-regression-from-scratch-in-python-ec66603592e2
