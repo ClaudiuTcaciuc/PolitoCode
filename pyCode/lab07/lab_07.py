@@ -77,4 +77,4 @@ if __name__ == '__main__':
     res_test = logreg_obj_v2(np.ones(2+1), np.array([[1, 2], [3, 4]]), np.array([1, -1]), 0.1)
     print(f"res_test:\n{res_test}")
     
-    #https://towardsdatascience.com/logistic-regression-from-scratch-in-python-ec66603592e2
+    # https://towardsdatascience.com/logistic-regression-from-scratch-in-python-ec66603592e2
