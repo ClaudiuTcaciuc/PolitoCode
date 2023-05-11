@@ -1,8 +1,6 @@
 import numpy as np
 import scipy.optimize as opt
 from sklearn import datasets
-#test
-from sklearn.metrics import accuracy_score
 
 def load_iris_binary():
     data, label = datasets.load_iris()['data'].T, datasets.load_iris()['target']
@@ -42,22 +40,14 @@ def gradient_approximation(x, h=1e-7):
 def sigmoid (z):
     return 1/(1 + np.exp(-z))
 
-def logreg_obj (v, data, label, lambda_):
-    d, n = data.shape
-    v = v.reshape((d+1, 1))
-    data = np.vstack((np.ones((1, n)), data))
-    z = np.dot(v.T, data)
-    J = lambda_/2 * np.dot(v.T, v) + (1.0/n)*np.sum(np.logaddexp(0, -label*z))
-    return J
-
-def logreg_obj_v2(v, data, label, lambda_):
+def logreg_obj(v, data, label, lambda_):
     d, n = data.shape
     w, b = v[0:-1].reshape((d,1)), v[-1]
     z = np.dot(w.T, data) + b
-    loss = np.logaddexp(0, -label * z)
-    reg = lambda_ / 2 * np.dot(w.T, w)
-    J = np.sum(loss) / n + reg
-    print(f"J: {J}")
+    label[label == 0] = -1
+    loss = np.sum(np.log(1 + np.exp(-label * z)))
+    reg = (lambda_ / 2) * np.sum(w**2)
+    J = (1.0/n)*loss + reg
     return J
 
 if __name__ == '__main__':
@@ -65,13 +55,22 @@ if __name__ == '__main__':
     x0_test = [0, 0]
     res_with_approx_grad = opt.fmin_l_bfgs_b(function_to_solve, x0_test, approx_grad=True)
     res_with_calculated_grad = opt.fmin_l_bfgs_b(function_to_solve, x0_test, approx_grad=False, fprime=gradient_to_solve)
-    #print(res_with_approx_grad)
+    #print(res_with_calculated_grad)
+    
     # load data
     data, label = load_iris_binary()
     (data_train, label_train), (data_test, label_test) = split_data_2to1(data, label)
     data_train_centered = (data_train - np.mean(data_train, axis=1).reshape(-1, 1))/np.std(data_train, axis=1).reshape(-1, 1)
-    # test gradient approximation
-    x0_iris = np.zeros(data_train.shape[0] + 1)
-    res_iris = opt.fmin_l_bfgs_b(logreg_obj_v2, x0_iris, args=(data_train_centered, label_train, 1e-6), approx_grad=True, iprint=0)
-    print(f"res_iris with approx_grad:\n{res_iris}")
     
+    #train the model
+    d, n = data_train_centered.shape
+    x0_iris_train = np.zeros(d+1)
+    lambda_ = 1.0
+    res = opt.fmin_l_bfgs_b(logreg_obj, x0_iris_train, args=(data_train_centered, label_train, lambda_), approx_grad=True, maxfun=1000, iprint=1)
+    print(f"res: {res}")
+    #evaluate the model
+    w_res, b_res = res[0][0:-1].reshape((d,1)), res[0][-1]
+    z = np.dot(w_res.T, data_test) + b_res
+    y_pred = sigmoid(z)
+    accuracy = np.mean(y_pred == label_test)
+    print(f"Accuracy: {accuracy}")
