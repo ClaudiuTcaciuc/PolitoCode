@@ -5,8 +5,6 @@ import { useState } from 'react';
 import './style.css';
 //define the header of the body
 
-let id = 0;
-
 class film{
     constructor(ID_film, title, favorite, date_watch, rating){
         this.ID_film = ID_film;
@@ -147,7 +145,7 @@ function filterUnseen(){
     if (dayjs(film.date_watch).isValid() === false){
       film_lib.populateLibrary(film);
     }
-  }µ
+  }
   return film_lib;
 }
 
