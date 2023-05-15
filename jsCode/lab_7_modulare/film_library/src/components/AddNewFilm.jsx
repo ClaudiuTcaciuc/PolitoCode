@@ -4,8 +4,8 @@ import { Container, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate, } from 'react-router-dom';
 import '../css/style.css';
-import film from '../classes/Film';
-import film_library from '../classes/film_library';
+
+import { film, film_library } from '../classes/FilmLibrary';
 
 function AddNewFilm(props) {
     const navigate = useNavigate();

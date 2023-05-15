@@ -6,9 +6,7 @@ import { Link } from 'react-router-dom';
 import '../css/style.css';
 import My_Footer from '../components/My_Footer';
 
-import filmLibrary from '../classes/FilmLibrary';
-import film_library from '../classes/film_library';
-import film from '../classes/Film';
+import { film, filmLibrary, film_library } from '../classes/FilmLibrary';
 
 
 function filterAll() {

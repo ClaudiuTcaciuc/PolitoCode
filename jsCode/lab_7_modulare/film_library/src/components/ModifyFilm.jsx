@@ -4,8 +4,7 @@ import { Container, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../css/style.css';
-import film_library from '../classes/film_library';
-import film from '../classes/Film';
+import { film, film_library } from '../classes/FilmLibrary';
 
 function UpdateFilmForm(props) {
     const { id } = useParams();

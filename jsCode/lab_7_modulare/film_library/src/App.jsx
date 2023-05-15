@@ -8,7 +8,6 @@ import UpdateFilmForm from './components/ModifyFilm';
 import My_Main from './components/My_Main';
 import SideBar_Filter from './components/My_Sidebar';
 
-
 function App() {
   const [filter, setFilter] = useState("All");
   const [new_film, addNewFilm] = useState(null);

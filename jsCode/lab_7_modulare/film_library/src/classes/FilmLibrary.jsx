@@ -1,3 +1,19 @@
+import dayjs from "dayjs";
+
+class film {
+    constructor(ID_film, title, favorite, date_watch, rating) {
+        this.ID_film = ID_film;
+        this.title = title;
+        this.favorite = favorite;
+        this.date_watch = date_watch === null ? null : dayjs(date_watch);
+        this.rating = rating;
+    }
+    toString() {
+        return `ID: ${this.ID_film}, Title: ${this.title}, Favorite: ${this.favorite}, Date Watch: ${this.date_watch === null ? "not watched" : this.date_watch.format("MMMM DD, YYYY")}, Rating: ${this.rating}`;
+    }
+}
+
+
 class filmLibrary {
     constructor() {
         this.films = [];
@@ -37,4 +53,12 @@ class filmLibrary {
     }
 }
 
-export default filmLibrary;
+let film_library = new filmLibrary();
+film_library.populateLibrary(new film(1, "The Godfather", true, "March 25, 2019", 1));
+film_library.populateLibrary(new film(2, "The Shawshank Redemption", false, "April 15, 2019", 5));
+film_library.populateLibrary(new film(3, "The Dark Knight", true, "January 01, 2021", null));
+film_library.populateLibrary(new film(4, "The Godfather: Part II", false, "August 25, 2022", 4));
+film_library.populateLibrary(new film(5, "The Lord of the Rings: The Return of the King", true, "August 04, 2021", null));
+
+
+export {film, filmLibrary, film_library};
