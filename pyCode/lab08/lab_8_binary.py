@@ -89,7 +89,6 @@ def cost_matrix_prior_prob (pi, cost_false_positive, cost_false_negative):
     return threshold, cost_mat, prior_class_prob
 
 def make_decision (ll_ratio, threshold):
-    
     decision = np.where(ll_ratio > threshold, 1, 0)
     return decision
 
@@ -173,7 +172,7 @@ def main():
     data_train_inferno, data_test_inferno = split_data(Inferno, 4)
     data_train_purgatorio, data_test_purgatorio = split_data(Purgatorio, 4)
     data_train_paradiso, data_test_paradiso = split_data(Paradiso, 4)
-    alpha = 1
+    alpha = 0.001
     
     data_train = build_unite_vocabulary(data_train_inferno, data_train_purgatorio, data_train_paradiso, alpha)
 

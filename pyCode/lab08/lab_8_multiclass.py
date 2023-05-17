@@ -1,6 +1,6 @@
-import sys
 import numpy as np
-import scipy.special
+import matplotlib.pyplot as plt
+import scipy.special as sp
 def pretty_print_dict(obj: dict):
   import json
   print(json.dumps(obj, indent=4))
@@ -10,9 +10,9 @@ def load_data ():
     list_purgatorio = []
     list_paradiso = []
     
-    inferno = open('data/inferno.txt', encoding="ISO-8859-1")
-    purgatorio = open('data/purgatorio.txt', encoding="ISO-8859-1")
-    paradiso = open('data/paradiso.txt', encoding="ISO-8859-1")
+    inferno = open('DivinaCommedia/inferno.txt', encoding="ISO-8859-1")
+    purgatorio = open('DivinaCommedia/purgatorio.txt', encoding="ISO-8859-1")
+    paradiso = open('DivinaCommedia/paradiso.txt', encoding="ISO-8859-1")
     
     for line in inferno:
         list_inferno.append(line.strip())
@@ -48,9 +48,8 @@ def build_vocabulary (list):
                 vocabulary[word] += 1
     return vocabulary
 
-def build_unite_vocabulary(inferno, purgatorio, paradiso):
+def build_unite_vocabulary(inferno, purgatorio, paradiso, alpha=0.001):
     vocabulary_train = {}
-    alpha = 1.0
     vocabulary_inferno = build_vocabulary(inferno)
     vocabulary_purgatorio = build_vocabulary(purgatorio)
     vocabulary_paradiso = build_vocabulary(paradiso)
@@ -76,54 +75,48 @@ def build_log_likelihood (data_test, vocab_train):
         log_likelihoods.append(predict_likelihood(line, vocab_train))
     return log_likelihoods
 
-def predict_class (log_likelihood, class_num):
-    score = np.array(log_likelihood).transpose()
-    label_test = np.ones(score.shape[1])*class_num
-    return calculate_accuracy(score, label_test)
-    
-def calculate_accuracy (log_score, label_test, number_of_classes=3):
-    log_score = log_score + np.log(1/number_of_classes)
-    marginal_log_score = scipy.special.logsumexp(log_score, axis=0)
-    posterior_log_score = log_score - marginal_log_score
-    posterior_score = np.exp(posterior_log_score)
-    acc = np.argmax(posterior_score, axis=0) == label_test
-    return np.sum(acc)/label_test.shape[0]
-
-def binary_prediction (log_likelihood_one, log_likelihood_two, class_one, class_two):
-    #select the rows of the matrix corresponding to the two classes
-    score = np.array(log_likelihood_one + log_likelihood_two)
-    score_binary = score[:, [class_one, class_two]].transpose()
-    label_test = np.concatenate((np.ones(len(log_likelihood_one))*class_one, np.ones(len(log_likelihood_two))*class_two))
-    label_test[label_test == class_one] = 0
-    label_test[label_test == class_two] = 1
-    return calculate_accuracy(score_binary, label_test, 2)
+def build_ll_cantica (log_inf, log_pur, log_par):
+    score = np.array (log_inf + log_pur + log_par).transpose()
+    label = np.concatenate([np.zeros(len(log_inf)), np.ones(len(log_pur)), np.ones(len(log_par))*2])
+    return score, label
 
 def main():
-    Inferno, Purgatorio, Paradiso = load_data()
-    
+    Inferno, Purgatorio, Paradiso = load_data() 
+
     data_train_inferno, data_test_inferno = split_data(Inferno, 4)
     data_train_purgatorio, data_test_purgatorio = split_data(Purgatorio, 4)
     data_train_paradiso, data_test_paradiso = split_data(Paradiso, 4)
+    alpha = 0.001
 
-    data_train = build_unite_vocabulary(data_train_inferno, data_train_purgatorio, data_train_paradiso)
-    
+    data_train = build_unite_vocabulary(data_train_inferno, data_train_purgatorio, data_train_paradiso, alpha)
+
     inferno_likelihoods = build_log_likelihood(data_test_inferno, data_train)
     purgatorio_likelihoods = build_log_likelihood(data_test_purgatorio, data_train)
     paradiso_likelihoods = build_log_likelihood(data_test_paradiso, data_train)
-    
-    inferno_accuracy = predict_class(inferno_likelihoods, 0)
-    print("Inferno accuracy: ", inferno_accuracy)
-    purgatorio_accuracy = predict_class(purgatorio_likelihoods, 1)
-    print("Purgatorio accuracy: ", purgatorio_accuracy)
-    paradiso_accuracy = predict_class(paradiso_likelihoods, 2)
-    print("Paradiso accuracy: ", paradiso_accuracy)
-    
-    infero_paradiso_accuracy = binary_prediction(inferno_likelihoods, paradiso_likelihoods, 0, 2)
-    print("Inferno vs Paradiso accuracy: ", infero_paradiso_accuracy)
-    inferno_purgatorio_accuracy = binary_prediction(inferno_likelihoods, purgatorio_likelihoods, 0, 1)
-    print("Inferno vs Purgatorio accuracy: ", inferno_purgatorio_accuracy)
-    purgatorio_paradiso_accuracy = binary_prediction(purgatorio_likelihoods, paradiso_likelihoods, 1, 2)
-    print("Purgatorio vs Paradiso accuracy: ", purgatorio_paradiso_accuracy)
 
+    commedia_ll, commedia_label = build_ll_cantica(inferno_likelihoods, purgatorio_likelihoods, paradiso_likelihoods)
+    cost_matrix = np.array([[0, 1, 2], [1, 0, 1], [2, 1, 0]])
+    prior_vector = np.array([0.3, 0.4, 0.3])
+    commedia_ll = commedia_ll + np.log(prior_vector.reshape(-1, 1))
+    marginal_log_score = sp.logsumexp(commedia_ll, axis=0)
+    posterior_log_score = commedia_ll - marginal_log_score
+    posterior_score = np.exp(posterior_log_score)
+
+    costs = np.dot(cost_matrix, posterior_score)
+    optimal_classes = np.argmin(costs, axis=0)
+    confusion_matrix = np.zeros((3, 3))
+    for true_class, pred_class in zip(commedia_label, optimal_classes):
+        confusion_matrix[int(true_class), int(pred_class)] += 1
+
+    dummy_cost = np.min(np.dot(cost_matrix, prior_vector))
+    missclassification_ratios = confusion_matrix / np.sum(confusion_matrix, axis=1, keepdims=True)
+    
+    DCF = np.sum(prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=1))
+
+    normalized_DCF = DCF / dummy_cost
+    print ("confusion_matrix: \n", confusion_matrix)
+    print ("DCF: \n", DCF)
+    print ("normalized_DCF: \n", normalized_DCF)
+    
 if __name__ == '__main__':
     main()
