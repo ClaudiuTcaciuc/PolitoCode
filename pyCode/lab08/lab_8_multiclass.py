@@ -59,7 +59,10 @@ def build_unite_vocabulary(inferno, purgatorio, paradiso, alpha=0.001):
         count_voc_inferno = vocabulary_inferno.get(word, 0) + alpha
         count_voc_purgatorio = vocabulary_purgatorio.get(word, 0) + alpha
         count_voc_paradiso = vocabulary_paradiso.get(word, 0) + alpha
-        vocabulary_train[word] = [(count_voc_inferno/sum(vocabulary_inferno.values())), (count_voc_purgatorio/sum(vocabulary_purgatorio.values())), (count_voc_paradiso/sum(vocabulary_paradiso.values()))]
+        vocabulary_train[word] = [(count_voc_inferno/sum(vocabulary_inferno.values())), 
+                                  (count_voc_purgatorio/sum(vocabulary_purgatorio.values())), 
+                                  (count_voc_paradiso/sum(vocabulary_paradiso.values()))
+                                ]
     return vocabulary_train
 
 def predict_likelihood(terzina, vocab_train):
@@ -106,12 +109,14 @@ def main():
     optimal_classes = np.argmin(costs, axis=0)
     confusion_matrix = np.zeros((3, 3))
     for true_class, pred_class in zip(commedia_label, optimal_classes):
-        confusion_matrix[int(true_class), int(pred_class)] += 1
+        confusion_matrix[int(pred_class), int(true_class)] += 1
 
-    dummy_cost = np.min(np.dot(cost_matrix, prior_vector))
-    missclassification_ratios = confusion_matrix / np.sum(confusion_matrix, axis=1, keepdims=True)
-    
-    DCF = np.sum(prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=1))
+    dummy_cost = np.min(np.dot(cost_matrix, prior_vector.reshape(-1, 1)))
+    missclassification_ratios = confusion_matrix / np.sum(confusion_matrix, axis=0, keepdims=True)
+    print ("missclassification_ratios: \n", missclassification_ratios)
+    DCF_vector = prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=0)
+    print ("DCF_vectpr: \n", DCF_vector)
+    DCF = np.sum(prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=0))
 
     normalized_DCF = DCF / dummy_cost
     print ("confusion_matrix: \n", confusion_matrix)
