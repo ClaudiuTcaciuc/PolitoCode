@@ -1,0 +1,21 @@
+.custom-listgroup {
+    background-color: #f8f9fa;
+  }
+.fixed-bottom-right {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    border-radius: 50%;
+}
+.custom-button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.on {
+  color: #000;
+}
+.off {
+  color: #ccc;
+}

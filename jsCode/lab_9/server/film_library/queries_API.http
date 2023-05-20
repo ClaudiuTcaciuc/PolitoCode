@@ -1,0 +1,54 @@
+
+GET http://localhost:3000/api/films
+###
+GET http://localhost:3000/api/film/1
+###
+GET http://localhost:3000/api/films/favorites
+###
+GET http://localhost:3000/api/films/bestrated
+###
+GET http://localhost:3000/api/films/seenlastmonth
+###
+GET http://localhost:3000/api/films/unseen
+###
+GET http://localhost:3000/api/lastid
+###
+DELETE http://localhost:3000/api/deletefilm/7
+###
+POST http://localhost:3000/api/addfilm
+Content-Type: application/json
+
+{
+    "title": "The Shawshank Redemption",
+    "favorite": true,
+    "watchdate": "2023-05-01",
+    "rating": 4,
+    "user": 1
+}
+###
+PUT http://localhost:3000/api/updatefilm/1
+Content-Type: application/json
+
+{
+    "title": "Pulp Fiction 2",
+    "favorite": true,
+    "watchdate": "2023-05-01",
+    "rating": 3,
+    "user": 1
+}
+###
+PUT http://localhost:3000/api/setfavorite/3
+Content-Type: application/json
+
+{
+    "favorite": false
+}
+
+###
+PUT http://localhost:3000/api/updaterating/1
+Content-Type: application/json
+
+{
+    "rating": 5
+}
+###
