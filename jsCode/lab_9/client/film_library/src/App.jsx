@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './css/style.css';
 import My_Header from './components/My_Header';
@@ -11,8 +11,6 @@ import { filmLibrary } from './classes/FilmLibrary';
 
 function App() {
   const [film_library, setFilmLibrary] = useState(new filmLibrary());
-  const [new_film, addNewFilm] = useState(null);
-  const [update_film, setUpdateFilm] = useState(null);
 
   const mainProps = {
     film_library: film_library,
@@ -31,7 +29,7 @@ function App() {
             <Routes>
               <Route path="/:filter?" element={<My_Main {...mainProps} />} />
               <Route path="/updatefilm/:id" element={<UpdateFilmForm {...mainProps}/>} />
-              <Route path="/addnewfilm" element={<AddNewFilm new_film={addNewFilm} />} />
+              <Route path="/addnewfilm" element={<AddNewFilm {...mainProps} />} />
             </Routes>
           </div>
         </div>

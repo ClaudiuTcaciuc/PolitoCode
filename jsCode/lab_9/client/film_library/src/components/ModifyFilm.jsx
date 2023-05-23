@@ -4,11 +4,11 @@ import { Container, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../css/style.css';
-import { film, film_library } from '../classes/FilmLibrary';
+import { film } from '../classes/FilmLibrary';
 
 function UpdateFilmForm(props) {
     const { id } = useParams();
-    const e = film_library.films.find((e) => e.ID_film === parseInt(id));
+    const e = props.film_library.films.find((e) => e.ID_film === parseInt(id));
     const navigate = useNavigate();
 
     const [title, setTitle] = useState(e.title);
@@ -17,6 +17,15 @@ function UpdateFilmForm(props) {
     const [favorite, setFavorite] = useState(e.favorite);
     const [rate, setRating] = useState(e.rating === null ? 1 : e.rating);
     const [ratingError, setRatingError] = useState('');
+
+    const updateLib = (updatedFilm) => {
+        props.setFilmLibrary((prevFilmList) => {
+            const updatedFilms = [...prevFilmList.films];
+            const index = updatedFilms.findIndex((film) => film.ID_film === e.ID_film);
+            updatedFilms[index] = updatedFilm;
+            return { ...prevFilmList, films: updatedFilms };
+        });
+    };
 
     const handleResetClose = () => {
         setTitle(e.title);
@@ -45,7 +54,7 @@ function UpdateFilmForm(props) {
                 dayjs(date),
                 rate_value,
             );
-            props.setUpdateFilm(new_film);
+            updateLib(new_film);
             navigate(-1);
         }
         else {

@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { film, filmLibrary } from './classes/FilmLibrary';
 const URL = "http://localhost:3000/api";
 
@@ -21,7 +20,6 @@ async function getFilteredFilms(filter) {
     if (response.ok) {
         let film_lib = new filmLibrary();
         for (let f of data) {
-            console.log(f);
             const id = f.id;
             const title = f.title;
             const favorite = f.favorite;

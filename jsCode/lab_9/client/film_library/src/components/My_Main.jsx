@@ -1,12 +1,14 @@
 import dayjs from 'dayjs';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../css/style.css';
+
 import { Container, Button, Form, Table } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import '../css/style.css';
+import { film } from '../classes/FilmLibrary';
 import My_Footer from '../components/My_Footer';
 import API from '../API';
-import { film } from '../classes/FilmLibrary';
+
 
 function Populate_TablefromLibrary(props) {
     const e = props.e;
@@ -22,7 +24,7 @@ function Populate_TablefromLibrary(props) {
         });
     };
     const setRating = (value) => {
-        const updated_film = new film(e.ID_film, e.title, e.favorite,  e.date_watch, value);
+        const updated_film = new film(e.ID_film, e.title, e.favorite, e.date_watch, value);
         updateLib(updated_film);
     }
     let favorite = e.favorite;
@@ -32,12 +34,12 @@ function Populate_TablefromLibrary(props) {
     };
 
     const setDelete = () => {
-        props.setFilmLibrary( (prevFilmList) => {
+        props.setFilmLibrary((prevFilmList) => {
             const updatedFilms = [...prevFilmList.films];
             const index = updatedFilms.findIndex((film) => film.ID_film === e.ID_film);
             updatedFilms.splice(index, 1);
             return { ...prevFilmList, films: updatedFilms };
-        } );
+        });
     }
     const favorite_checkbox = <Form.Check type="checkbox" label="Favorite" checked={favorite} onChange={() => setFavorite(!favorite)} />;
     const Set_rating_box = () => {
@@ -94,6 +96,7 @@ function Populate_TablefromLibrary(props) {
 
 function My_Table(props) {
     let filter_to_use = props.use_filter;
+    console.log(filter_to_use);
     let filter_name = null;
 
     if (props.update_film != null) {
@@ -103,33 +106,43 @@ function My_Table(props) {
     switch (filter_to_use) {
         case "all":
             filter_name = "All";
+            break;
         case "favorites":
             filter_name = "Favorite";
+            break;
         case "bestrated":
             filter_name = "Best Rated";
+            break;
         case "seenlastmonth":
             filter_name = "Seen Last Month";
+            break;
         case "unseen":
             filter_name = "Unseen";
+            break;
     }
     useEffect(() => {
         API.getFilteredFilms(filter_to_use == "all" ? "" : filter_to_use)
-    
+
             .then((film_fav) => {
-                props.setFilmLibrary( film_fav );
-                })
+                props.setFilmLibrary(film_fav);
+            })
             .catch((error) => { console.log(error); });
-    }, [filter_to_use]);
+    }, [filter_to_use, props.setFilmLibrary]);
+    if (!props.film_library || !props.film_library.films) {
+        return (
+            <div>Loading...</div>
+        );
+    }
     return (
         <div>
             <h1 className="mb-2" id="filter-title">{filter_name}</h1>
             <Table>
                 <tbody id="table-body">
-                {
-                    props.film_library.films && Array.isArray(props.film_library.films) && props.film_library.films.map((e) => {
-                        return <Populate_TablefromLibrary e={e} key={e.ID_film} film_library={props.film_library} setFilmLibrary={props.setFilmLibrary} />;
-                    })
-                }
+                    {
+                        props.film_library.films && Array.isArray(props.film_library.films) && props.film_library.films.map((e) => {
+                            return <Populate_TablefromLibrary e={e} key={e.ID_film} film_library={props.film_library} setFilmLibrary={props.setFilmLibrary} />;
+                        })
+                    }
                 </tbody>
             </Table>
         </div>

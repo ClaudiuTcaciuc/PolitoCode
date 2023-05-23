@@ -1,56 +1,57 @@
 import dayjs from 'dayjs';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Button, Form } from 'react-bootstrap';
 import { useState } from 'react';
 import { useNavigate, } from 'react-router-dom';
+import { film } from '../classes/FilmLibrary';
 import '../css/style.css';
-
-import { film, film_library } from '../classes/FilmLibrary';
 
 function AddNewFilm(props) {
     const navigate = useNavigate();
 
-    const [title, setTitle] = useState("");
+    const [title, setTitle] = useState('');
     const [titleError, setTitleError] = useState('');
-    const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
-    const [rating, setRating] = useState();
+    const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [rating, setRating] = useState('');
     const [ratingError, setRatingError] = useState('');
     const [favorite, setFavorite] = useState(false);
 
     const handleAddFilm = (event) => {
         event.preventDefault();
-        let rate_value = parseInt(rating);
-        if (isNaN(rate_value) || rate_value < 0 || rate_value > 5) {
+
+        if (title.trim() === '') {
+            setTitleError('Title is required');
+            return;
+        } else {
+            setTitleError('');
+        }
+
+        const rateValue = parseInt(rating);
+        if (isNaN(rateValue) || rateValue < 0 || rateValue > 5) {
             setRatingError('Rating must be between 0 and 5');
             return;
-        }
-        else {
+        } else {
             setRatingError('');
         }
-        if (title !== "") {
-            setTitleError('');
-            let new_film = new film(
-                film_library.getLastID() + 1,
-                title,
-                favorite,
-                dayjs(date),
-                rate_value,
-            );
-            props.new_film(() => film_library.populateLibrary(new_film));
-            navigate(-1);
-        }
-        else {
-            setTitleError('Title is required');
-        }
-    }
+
+        const newFilm = new film(
+            props.film_library.getLastID() + 1,
+            title.trim(),
+            favorite,
+            dayjs(date),
+            rateValue
+        );
+
+        props.setFilmLibrary((prev) => prev.populateLibrary(newFilm));
+        navigate("/");
+    };
 
     const handleClose = () => {
-        setTitle("");
-        setDate(dayjs().format("YYYY-MM-DD"));
-        setRating(0);
+        setTitle('');
+        setDate(dayjs().format('YYYY-MM-DD'));
+        setRating('');
         setFavorite(false);
         navigate(-1);
-    }
+    };
 
     return (
         <Container fluid>

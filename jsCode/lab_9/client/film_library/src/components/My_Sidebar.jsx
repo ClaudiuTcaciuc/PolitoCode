@@ -2,9 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ListGroup } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
 import '../css/style.css';
-
 
 function SideBar_Filter() {
     const navigate = useNavigate();
