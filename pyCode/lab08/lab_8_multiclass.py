@@ -113,7 +113,6 @@ def main():
 
     dummy_cost = np.min(np.dot(cost_matrix, prior_vector.reshape(-1, 1)))
     missclassification_ratios = confusion_matrix / np.sum(confusion_matrix, axis=0, keepdims=True)
-    print ("missclassification_ratios: \n", missclassification_ratios)
     DCF_vector = prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=0)
     print ("DCF_vectpr: \n", DCF_vector)
     DCF = np.sum(prior_vector * np.sum(missclassification_ratios * cost_matrix, axis=0))

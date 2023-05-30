@@ -58,7 +58,9 @@ def build_unite_vocabulary(inferno, purgatorio, paradiso, alpha=0.001):
         count_voc_inferno = vocabulary_inferno.get(word, 0) + alpha
         count_voc_purgatorio = vocabulary_purgatorio.get(word, 0) + alpha
         count_voc_paradiso = vocabulary_paradiso.get(word, 0) + alpha
-        vocabulary_train[word] = [(count_voc_inferno/sum(vocabulary_inferno.values())), (count_voc_purgatorio/sum(vocabulary_purgatorio.values())), (count_voc_paradiso/sum(vocabulary_paradiso.values()))]
+        vocabulary_train[word] = [(count_voc_inferno/sum(vocabulary_inferno.values())), 
+                                  (count_voc_purgatorio/sum(vocabulary_purgatorio.values())),
+                                  (count_voc_paradiso/sum(vocabulary_paradiso.values()))]
     return vocabulary_train
 
 def predict_likelihood(terzina, vocab_train):
@@ -129,6 +131,7 @@ def compute_min_DCF (scores, labels, prior_class_prob, cost_mat):
     min_DCF = float('inf')
     best_threshold = None
     for i in range(len(sorted_scores)):
+        
         threshold = sorted_scores[i]
         decisions = make_decision(scores, threshold)
         confusion_matrix = calculate_confusion_matric(decisions, labels)
