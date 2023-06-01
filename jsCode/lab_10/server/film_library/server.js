@@ -15,10 +15,23 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
+// set timeout
+const enableTimeout = true;
+const timeout = 0.2 * 1000; // 10 seconds
+
+function conditionalTimeout ( functor ){
+    if (enableTimeout)
+        setTimeout(functor, timeout);
+    else
+        functor();
+}
+
 // GET /api/films
 app.get("/api/films", (req, res) => {
     dao.getRetriveFilms()
-        .then(films => res.json(films))
+        .then(
+            (films) => conditionalTimeout( () => res.json(films) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
@@ -32,7 +45,9 @@ app.get("/api/film/:id", (req, res) => {
         }
         else{
             dao.getRetriveFilmId(id)
-                .then(film => res.json(film))
+                .then(
+                    (film) => conditionalTimeout( () => res.json(film) )
+                )
                 .catch((err) => res.status(500).json(err));
         }
     }
@@ -44,35 +59,45 @@ app.get("/api/film/:id", (req, res) => {
 // GET /api/films/favorite
 app.get("/api/films/favorites", (req, res) => {
     dao.getFilmsFavorite()
-        .then(films => res.json(films))
+        .then(
+            (films) => conditionalTimeout( () => res.json(films) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
 // GET /api/films/bestrated
 app.get("/api/films/bestrated", (req, res) => {
     dao.getFilmsBestRated()
-        .then(films => res.json(films))
+        .then(
+            (films) => conditionalTimeout( () => res.json(films) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
 // GET /api/films/seenlastmonth
 app.get("/api/films/seenlastmonth", (req, res) => {
     dao.getFilmsSeenLastMonth()
-        .then(films => res.json(films))
+        .then(
+            (films) => conditionalTimeout( () => res.json(films) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
 // GET /api/films/unseen
 app.get("/api/films/unseen", (req, res) => {
     dao.getFilmsUnseen()
-        .then(films => res.json(films))
+        .then(
+            (films) => conditionalTimeout( () => res.json(films) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
 // GET /api/lastid
 app.get("/api/lastid", (req, res) => {
     dao.getRetriveLastID()
-        .then(id => res.json(id))
+        .then(
+            (id) => conditionalTimeout( () => res.json(id) )
+        )
         .catch((err) => res.status(500).json(err));
 });
 
