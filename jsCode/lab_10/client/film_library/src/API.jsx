@@ -2,7 +2,9 @@ import { film, filmLibrary } from './classes/FilmLibrary';
 const URL = "http://localhost:3000/api";
 
 async function getFilmById (id) {
-    const response = await fetch(URL + "/film/" + id);
+    const response = await fetch(URL + "/film/" + id, {
+        credentials: "include",
+    });
     const data = await response.json();
     if (response.ok) {
         const id = data.id;
@@ -15,8 +17,11 @@ async function getFilmById (id) {
 }
 
 async function getFilteredFilms(filter) {   
-    const response = await fetch(URL + "/films/"+ filter);
+    const response = await fetch(URL + "/films/"+ filter, {
+        credentials: "include",
+    });
     const data = await response.json();
+    console.log(data);
     if (response.ok) {
         let film_lib = new filmLibrary();
         for (let f of data) {
@@ -40,6 +45,7 @@ async function addNewFilmLib (film) {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify(film),
             }
         );
@@ -62,6 +68,7 @@ async function updateFilmLib (film) {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify(film),
         });
         if (!response.ok){
@@ -80,6 +87,7 @@ async function deleteFilmLib (id) {
     try {
         const response = await fetch (URL + "/deletefilm/" + id, {
                 method: "DELETE",
+                credentials: "include",
         });
         if (!response.ok){
             throw new Error("HTTP error, status = " + response.status);
@@ -100,6 +108,7 @@ async function updateFavInline (film) {
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(film),
         });
         if (!response.ok){
@@ -121,6 +130,7 @@ async function updateRateInline (film) {
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(film),
         });
         if (!response.ok){
@@ -135,5 +145,49 @@ async function updateRateInline (film) {
     }
 }
 
-const API = { getFilmById, getFilteredFilms, addNewFilmLib, updateFilmLib, deleteFilmLib, updateFavInline, updateRateInline };
+async function logIn (credentials) {
+    let response = await fetch(URL + "/sessions", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+    });
+    console.log(response);
+    if (response.ok) {
+        const user = await response.json();
+        return user;
+    }
+    else {
+        const err = await response.json();
+        throw err.message;
+    }
+}
+
+async function logOut () {
+    await fetch(URL + "/sessions/current", {
+        method: "DELETE",
+        credentials: "include",
+    });
+}
+
+async function getUserInfo () {
+    const response = await fetch (URL + "/sessions/current", {
+        credentials: "include",
+    });
+    const userInfo = await response.json();
+    if (response.ok) {
+        return userInfo;
+    }
+    else {
+        throw userInfo;  // an object with the error coming from the server
+    }
+}
+
+const API = { 
+    getFilmById, getFilteredFilms, addNewFilmLib, 
+    updateFilmLib, deleteFilmLib, updateFavInline, 
+    updateRateInline, logIn, logOut, getUserInfo 
+};
 export default API;

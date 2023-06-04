@@ -21,9 +21,9 @@ exports.getRetriveLastID = () => {
     });
 };
 
-exports.getRetriveFilms = () => {
+exports.getRetriveFilms = (user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films", (err, rows) => {
+        db.all("SELECT * FROM films WHERE user = ?", [user], (err, rows) => {
             if (err) {
                 reject(err);
                 return;
@@ -42,9 +42,9 @@ exports.getRetriveFilms = () => {
     })
 };
 
-exports.getRetriveFilmId = (id) => {
+exports.getRetriveFilmId = (id, user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films WHERE id = ?", [id], (err, rows) => {
+        db.all("SELECT * FROM films WHERE id = ? AND user = ?", [id, user], (err, rows) => {
             if (err) {
                 reject(err);
                 return;
@@ -68,9 +68,9 @@ exports.getRetriveFilmId = (id) => {
     });
 };
 
-exports.getFilmsFavorite = () => {
+exports.getFilmsFavorite = (user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films WHERE favorite = 1", (err, rows) => {
+        db.all("SELECT * FROM films WHERE favorite = 1 AND user = ?", [user],(err, rows) => {
             if (err) {
                 reject(err);
                 return;
@@ -89,9 +89,9 @@ exports.getFilmsFavorite = () => {
     })
 };
 
-exports.getFilmsBestRated = () => {
+exports.getFilmsBestRated = (user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films WHERE rating = 5", (err, rows) => {
+        db.all("SELECT * FROM films WHERE rating = 5 AND user = ?", [user], (err, rows) => {
             if (err) {
                 reject(err);
                 return;
@@ -110,9 +110,9 @@ exports.getFilmsBestRated = () => {
     })
 };
 
-exports.getFilmsSeenLastMonth = () => {
+exports.getFilmsSeenLastMonth = (user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films WHERE watchdate BETWEEN date('2023-04-01', '-1 month') AND date('2023-04-01')", (err, rows) => {
+        db.all("SELECT * FROM films WHERE watchdate BETWEEN date('2023-04-01', '-1 month') AND date('2023-04-01') AND user = ?", [user], (err, rows) => {
             if (err) {
                 console.log(err);
                 reject(err);
@@ -132,9 +132,9 @@ exports.getFilmsSeenLastMonth = () => {
     })
 };
 
-exports.getFilmsUnseen = () => {
+exports.getFilmsUnseen = (user) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM films WHERE watchdate IS NULL", (err, rows) => {
+        db.all("SELECT * FROM films WHERE watchdate IS NULL AND user = ?", [user], (err, rows) => {
             if (err) {
                 reject(err);
                 return;
@@ -195,10 +195,10 @@ exports.updateFilm = (film) => {
     });
 };
 
-exports.deleteFilm = (id) => {
+exports.deleteFilm = (id, user) => {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM films WHERE id = ?';
-        db.run(sql, [id], function (err) {
+        const sql = 'DELETE FROM films WHERE id = ? AND user = ?';
+        db.run(sql, [id, user], function (err) {
             if (err) {
                 reject(err);
                 return;

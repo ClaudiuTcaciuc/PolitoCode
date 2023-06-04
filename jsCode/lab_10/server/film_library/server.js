@@ -5,6 +5,10 @@ const morgan = require("morgan");
 const { check, validationResult } = require("express-validator");
 const dao = require("./dao.js");
 const cors = require("cors");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const session = require("express-session");
+const user_dao = require("./user_dao.js");
 
 // init express
 const app = express();
@@ -13,11 +17,15 @@ const port = 3000;
 // set-up the middlewares
 app.use(morgan("dev"));
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+    origin: "http://localhost:5173",
+    credentials: true,
+};
+app.use(cors(corsOptions));
 
 // set timeout
 const enableTimeout = true;
-const timeout = 0.2 * 1000; // 10 seconds
+const timeout = 0.1 * 1000; // 10 seconds
 
 function conditionalTimeout ( functor ){
     if (enableTimeout)
@@ -26,9 +34,47 @@ function conditionalTimeout ( functor ){
         functor();
 }
 
+// set passport
+passport.use (new LocalStrategy (
+    function (username, password, done) {
+        user_dao.getUser(username, password)
+            .then ( (user) => {
+                if (!user)
+                    return done (null, false, { message: "Incorrect username and/or password." });
+                return done (null, user);
+            } )
+            .catch ( (err) => { return done (err); } );
+    }
+))
+
+passport.serializeUser ( (user, done) => {
+    done (null, user.id);
+} );
+
+passport.deserializeUser ( (id, done) => {
+    user_dao.getUserById (id)
+        .then ( (user) => { done (null, user); } )
+        .catch ( (err) => { done (err, null); } );
+} );
+
+const isLoggedIn = (req, res, next) => {
+    if (req.isAuthenticated())
+        return next();
+    return res.status(401).json({ error: "Not authenticated." });
+};
+
+app.use (session({
+    secret: "I love mangos",
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use (passport.initialize());
+app.use (passport.session());
+
 // GET /api/films
-app.get("/api/films", (req, res) => {
-    dao.getRetriveFilms()
+app.get("/api/films", isLoggedIn, (req, res) => {
+    dao.getRetriveFilms(req.user.id)
         .then(
             (films) => conditionalTimeout( () => res.json(films) )
         )
@@ -36,7 +82,7 @@ app.get("/api/films", (req, res) => {
 });
 
 // GET /api/films/:id
-app.get("/api/film/:id", (req, res) => {
+app.get("/api/film/:id", isLoggedIn, (req, res) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
@@ -44,7 +90,7 @@ app.get("/api/film/:id", (req, res) => {
             return;
         }
         else{
-            dao.getRetriveFilmId(id)
+            dao.getRetriveFilmId(id, req.user.id)
                 .then(
                     (film) => conditionalTimeout( () => res.json(film) )
                 )
@@ -57,8 +103,8 @@ app.get("/api/film/:id", (req, res) => {
 });
 
 // GET /api/films/favorite
-app.get("/api/films/favorites", (req, res) => {
-    dao.getFilmsFavorite()
+app.get("/api/films/favorites", isLoggedIn, (req, res) => {
+    dao.getFilmsFavorite(req.user.id)
         .then(
             (films) => conditionalTimeout( () => res.json(films) )
         )
@@ -66,8 +112,8 @@ app.get("/api/films/favorites", (req, res) => {
 });
 
 // GET /api/films/bestrated
-app.get("/api/films/bestrated", (req, res) => {
-    dao.getFilmsBestRated()
+app.get("/api/films/bestrated", isLoggedIn, (req, res) => {
+    dao.getFilmsBestRated(req.user.id)
         .then(
             (films) => conditionalTimeout( () => res.json(films) )
         )
@@ -75,8 +121,8 @@ app.get("/api/films/bestrated", (req, res) => {
 });
 
 // GET /api/films/seenlastmonth
-app.get("/api/films/seenlastmonth", (req, res) => {
-    dao.getFilmsSeenLastMonth()
+app.get("/api/films/seenlastmonth", isLoggedIn, (req, res) => {
+    dao.getFilmsSeenLastMonth(req.user.id)
         .then(
             (films) => conditionalTimeout( () => res.json(films) )
         )
@@ -84,8 +130,8 @@ app.get("/api/films/seenlastmonth", (req, res) => {
 });
 
 // GET /api/films/unseen
-app.get("/api/films/unseen", (req, res) => {
-    dao.getFilmsUnseen()
+app.get("/api/films/unseen", isLoggedIn, (req, res) => {
+    dao.getFilmsUnseen(req.user.id)
         .then(
             (films) => conditionalTimeout( () => res.json(films) )
         )
@@ -93,8 +139,8 @@ app.get("/api/films/unseen", (req, res) => {
 });
 
 // GET /api/lastid
-app.get("/api/lastid", (req, res) => {
-    dao.getRetriveLastID()
+app.get("/api/lastid", isLoggedIn, (req, res) => {
+    dao.getRetriveLastID(req.user.id)
         .then(
             (id) => conditionalTimeout( () => res.json(id) )
         )
@@ -102,7 +148,7 @@ app.get("/api/lastid", (req, res) => {
 });
 
 // POST /api/addafilm
-app.post("/api/addfilm", [
+app.post("/api/addfilm", isLoggedIn, [
     check("title").isLength({ min: 1 }),
     check("favorite").isBoolean(),
     check("watchdate").custom((value) => {
@@ -135,9 +181,8 @@ app.post("/api/addfilm", [
         favorite: req.body.favorite,
         watchdate: req.body.watchdate,
         rating: req.body.rating,
-        user: req.body.user
+        user: req.user.id
     };
-    console.log(film);
     try {
         const filmID = await dao.createFilm(film);
         res.status(201).json(filmID);
@@ -147,7 +192,7 @@ app.post("/api/addfilm", [
 });
 
 // PUT /api/films/:id
-app.put("/api/updatefilm/:id", [
+app.put("/api/updatefilm/:id", isLoggedIn, [
     check("title").isLength({ min: 1 }),
     check("favorite").isBoolean(),
     check("watchdate").custom((value) => {
@@ -172,9 +217,8 @@ app.put("/api/updatefilm/:id", [
     if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array()});
     }
- 
-    const filmToUpdate = await dao.getRetriveFilmId(req.params.id);
-    if (filmToUpdate.error) 
+    const filmToUpdate = await dao.getRetriveFilmId(req.params.id, req.user.id);
+    if (filmToUpdate.error)
         return res.status(404).json(filmToUpdate);
     else {
         const film = {
@@ -183,7 +227,7 @@ app.put("/api/updatefilm/:id", [
             favorite: req.body.favorite,
             watchdate: req.body.watchdate,
             rating: req.body.rating,
-            user: req.body.user
+            user: req.user.id
         };
         try {
             const update_film = await dao.updateFilm(film);
@@ -196,13 +240,13 @@ app.put("/api/updatefilm/:id", [
 });
 
 // DELETE /api/deletefilm/:id
-app.delete("/api/deletefilm/:id", async(req, res) => {
+app.delete("/api/deletefilm/:id", isLoggedIn, async(req, res) => {
     const filmToDelete = await dao.getRetriveFilmId(req.params.id);
     if (filmToDelete.error) 
         return res.status(404).json(filmToDelete);
     else {
         try {
-            const delete_film = await dao.deleteFilm(req.params.id);
+            const delete_film = await dao.deleteFilm(req.params.id, req.user.id);
             res.json(delete_film)
             res.status(200).end();
         }catch(err) {
@@ -212,14 +256,15 @@ app.delete("/api/deletefilm/:id", async(req, res) => {
 });
 
 // PUT /api/setfavorite/:id
-app.put("/api/setfavorite/:id", [
+app.put("/api/setfavorite/:id", isLoggedIn, [
     check("favorite").isBoolean()
 ], async(req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array()});
     }
-    const filmToUpdate = await dao.getRetriveFilmId(req.params.id);
+    console.log(req.params);
+    const filmToUpdate = await dao.getRetriveFilmId(req.params.id, req.user.id);
     if (filmToUpdate.error)
         return res.status(404).json(filmToUpdate);
     else {
@@ -234,7 +279,7 @@ app.put("/api/setfavorite/:id", [
 });
 
 // PUT /api/updaterating/:id
-app.put("/api/updaterating/:id", [
+app.put("/api/updaterating/:id", isLoggedIn, [
     check("rating").custom((value) => {
         if (value !== null) {
             if (value < 1 || value > 5) {
@@ -248,7 +293,7 @@ app.put("/api/updaterating/:id", [
     if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array()});
     }
-    const filmToUpdate = await dao.getRetriveFilmId(req.params.id);
+    const filmToUpdate = await dao.getRetriveFilmId(req.params.id, req.user.id);
     if (filmToUpdate.error)
         return res.status(404).json(filmToUpdate);
     else {
@@ -259,6 +304,36 @@ app.put("/api/updaterating/:id", [
         }catch(err) {
             res.status(503).json({ error: `Database error during the update of film ${filmToUpdate.title} with ID ${filmToUpdate.ID_film}.` });
         }
+    }
+});
+
+app.post("/api/sessions", function (req, res, next) {
+    passport.authenticate("local", (err, user, info) => {
+        if (err)
+            return next(err);
+        if (!user) {
+            return res.status(401).json(info);
+        }
+        req.login(user, (err) => {
+            if (err)
+                return next(err);
+            return res.json(req.user);
+        });
+    })(req, res, next);
+});
+
+app.delete("/api/sessions/current", (req, res) => {
+    req.logout( () => {
+        res.end();
+    });
+});
+
+app.get("/api/sessions/current", (req, res) => {
+    if (req.isAuthenticated()) {
+        res.status(200).json(req.user);
+    }
+    else {
+        res.status(401).json({ error: "Unauthenticated user!" });
     }
 });
 

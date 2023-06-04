@@ -4,7 +4,7 @@ import '../css/style.css';
 
 import { Container, Button, Form, Table, Spinner, Modal } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { film } from '../classes/FilmLibrary';
 import My_Footer from '../components/My_Footer';
 import API from '../API';

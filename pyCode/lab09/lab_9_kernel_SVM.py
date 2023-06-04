@@ -71,7 +71,7 @@ if __name__ == '__main__':
     K = 0.0
     kernel_func = poly_kernel
     w_vec, alpha_optimal = kernel_SVM(data_train, label_train, C=C, K=K, kernel_func=poly_kernel)
-
+    print('w_vec: ', w_vec)
     support_vectors = data_train[:, alpha_optimal > 0]
     support_labels = label_train[alpha_optimal > 0]
     support_alpha = alpha_optimal[alpha_optimal > 0]
