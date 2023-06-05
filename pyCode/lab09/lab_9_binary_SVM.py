@@ -50,7 +50,7 @@ def primal_svm_dual_formulation (data_train, label_train, C=1.0, K = 1):
     print('dual loss = ', dual_loss)
     print('duality gap = ', duality_gap)
     return w_vec
-    
+
 if __name__ == '__main__':
     # load data and split into train and test sets
     data, label = load_iris_binary()
