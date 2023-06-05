@@ -97,7 +97,7 @@ app.get("/api/sessions/current", (req, res) => {
   }
 });
 
-// activate the server on the port 3000
+// activate the server
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
