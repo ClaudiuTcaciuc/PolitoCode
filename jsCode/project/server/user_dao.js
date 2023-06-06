@@ -11,8 +11,8 @@ const db = new sqlite.Database("CSM_Small.db", (err) => {
 // get user by email and password
 exports.getUser = (email, password) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT * FROM users WHERE email = ?";
-        db.all(sql, [email], (err, row) => {
+        const sql = "SELECT * FROM Users WHERE email = ?";
+        db.get(sql, [email], (err, row) => {
             if (err) {
                 reject(err);
                 return;
@@ -48,7 +48,7 @@ exports.getUser = (email, password) => {
 exports.getUserById = (id) => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT * FROM users WHERE id = ?";
-        db.all(sql, [id], (err, row) => {
+        db.get(sql, [id], (err, row) => {
             if (err) {
                 reject(err);
                 return;

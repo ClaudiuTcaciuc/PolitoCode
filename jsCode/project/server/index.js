@@ -20,13 +20,17 @@ const port = 3000;
 app.use(morgan('dev'));
 app.use(express.json());
 const corsOptions = {
-  origin: 'http://localhost:8080',
+  origin: 'http://localhost:5173',
   credentials: true,
 };
 app.use(cors(corsOptions));
 
 // set-up passport
-passport.use ( new LocalStrategy (
+passport.use ( new LocalStrategy ( {
+  // credentials are email and password 
+    usernameField: 'email',
+    passwordField: 'password'
+},
   function (username, password, done) {
     user_dao.getUser(username, password)
       .then ( (user) => {

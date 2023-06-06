@@ -1,34 +1,38 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+// import react / bootstrap libraries
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// import components
+import My_Header from './Components/My_Header'
+import My_Login from './Components/My_Login'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  const loginSuccessful = (user) => {
+    setUser(user);
+    setLoggedIn(true);
+  }
+  
+  const mainProps = {
+    user: user,
+    loggedIn: loggedIn,
+    setUser: setUser,
+    setLoggedIn: setLoggedIn,
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <BrowserRouter>
+      <div style={{height:"100vh"}}>
+        <My_Header {...mainProps}/>
+        <Routes>
+          <Route path='/' />
+          <Route path='/login' element={loggedIn? <Navigate replace to='/' />:  <My_Login loginSuccessful={loginSuccessful} />} />
+
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </BrowserRouter>
   )
 }
 
