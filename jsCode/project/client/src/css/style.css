@@ -16,7 +16,6 @@
 
 .my-svg {
     filter: invert(100%);
-
 }
 
 .my-login-wrapper {
@@ -35,3 +34,20 @@
     margin-right: auto;
     align-content: space-around;
   }
+
+.fixed-bottom-right {
+    position: fixed;
+    bottom: 2em;
+    right: 2em;
+  }
+.fixed-bottom-right .btn {
+    background-color: purple;
+    border-color: purple;
+    color: white;
+    border-radius: 40%;
+    height: 10%;
+}
+.fixed-bottom-right .btn:hover {
+    background-color: rgb(85, 6, 85);
+    border-color: purple;
+}

@@ -45,7 +45,7 @@ function My_Header(props) {
                     <Navbar.Brand>
                         <Button className="me-5 text-white" onClick={() => handleLogoutModal()}>
                             <img src={personLogo} className="App-logo my-svg" alt="logo" />{" "}
-                            {name}
+                            {name + ' (Logout)'}
                         </Button>
                     </Navbar.Brand>
                 ) : (
