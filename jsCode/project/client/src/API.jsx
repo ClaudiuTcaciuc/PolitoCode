@@ -40,5 +40,52 @@ async function getUserInfo () {
     }
 }
 
-const API = { logIn, logOut, getUserInfo };
+async function getPages (type) {
+    const response = await fetch (URL + "/" + type, {
+        credentials: "include",
+    });
+    const data = await response.json();
+    if (response.ok) {
+        return data;
+    }
+    else {
+        throw data;
+    }
+}
+
+async function getAppName() {
+    const response = await fetch(URL + "/appname");
+    const data = await response.json();
+    if (response.ok) {
+      console.log(data); // Stampa "CSM Small" nella console
+      return data; // Restituisce solo il valore "CSM Small"
+    } else {
+      throw data;
+    }
+  }
+  
+
+async function changeAppName (name) {
+    try {
+        const response = await fetch (URL + "/changeappname", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({application_name: name}),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.text();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+const API = { logIn, logOut, getUserInfo, getPages, getAppName, changeAppName };
 export default API;

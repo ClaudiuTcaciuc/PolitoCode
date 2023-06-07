@@ -8,10 +8,11 @@ const passport = require('passport');
 const session = require('express-session');
 const LocalStrategy = require('passport-local').Strategy;
 const { check, validationResult } = require('express-validator');
+const fs = require('fs');
 
 // import local modules
 const user_dao = require('./user_dao');
-
+const dao = require('./dao');
 // init express
 const app = new express();
 const port = 3000;
@@ -60,6 +61,18 @@ const isLoggedIn = (req, res, next) => {
   return res.status(401).json({ error: 'not authenticated' });
 };
 
+// check if the user is logged in and is an admin
+const isLoggedInAdmin = (req, res, next) => {
+  user_dao.getUserById(req.user.id).then((user) => {
+    if (user && user.isAdmin === 1) {
+      return next();
+    }
+  }).catch((err) => {
+    return res.status(401).json({ error: 'not an admin' });
+  });
+  
+};
+
 // set-up session
 app.use(session({
   secret: 'I love mangos',
@@ -69,6 +82,17 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// set timeout for requests to simulate remote server delay
+const enableTimeout = false;
+const timeout = 0.1 * 1000; // 10 seconds
+
+function conditionalTimeout ( functor ){
+    if (enableTimeout)
+        setTimeout(functor, timeout);
+    else
+        functor();
+}
 
 // POST: /api/sessions -> login
 app.post("/api/sessions", function (req, res, next) {
@@ -99,6 +123,71 @@ app.get("/api/sessions/current", (req, res) => {
   else {
     res.status(401).json({ error: 'Unauthenticated user!' });
   }
+});
+
+// GET: api/publicpages -> get all public pages to show in home page
+app.get("/api/publicpages", (req, res) => {
+  dao.getPubPages()
+    .then( (pages) => {
+      conditionalTimeout( () => res.json(pages) );
+    } )
+    .catch( (err) => res.status(500).json( err ) );
+});
+
+// GET: api/allpages -> get all pages to show in home for logged users 
+app.get("/api/allpages", isLoggedIn, (req, res) => {
+  dao.getPages()
+    .then( (pages) => {
+      conditionalTimeout( () => res.json(pages) );
+    } )
+    .catch( (err) => res.status(500).json( err ) );
+});
+
+// PUT: api/changeappname -> change app name
+app.put("/api/changeappname", isLoggedIn, (req, res) => {
+  if (!isLoggedInAdmin){
+    res.status(401).send("Unauthorized");
+    return;
+  }
+  const updateData = req.body;
+  fs.readFile('./appname.json', 'utf8', (err, data) => {
+    if (err){
+      res.status(500).send("Internal server error");
+      return;
+    }
+    let data_json;
+    try {
+      data_json = JSON.parse(data);
+    }
+    catch (err) {
+      res.status(500).send("Internal server error");
+      return;
+    }
+    const updateJSON = {... data_json, ...updateData};
+    fs.writeFile('./appname.json', JSON.stringify(updateJSON), (err) => {
+      if (err){
+        res.status(500).send("Internal server error");
+        return;
+      }
+      res.status(200).send("App name changed");
+    });
+  });
+});
+
+app.get("/api/appname", (req, res) => {
+  fs.readFile('./appname.json', 'utf8', (err, data) => {
+    if (err) {
+      res.status(500).send("Internal server error");
+      return;
+    }
+    try {
+      const jsonData = JSON.parse(data);
+      res.json(jsonData.application_name);
+    } catch (err) {
+      res.status(501).send("Internal server error");
+      return;
+    }
+  });
 });
 
 // activate the server

@@ -1,27 +1,50 @@
+// import react / bootstrap libraries
 import { Button, Container, Form, Navbar, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+// import images
 import globeLogo from '../assets/globe-americas.svg';
 import personLogo from '../assets/person-circle.svg';
+import wrenchLogo from '../assets/wrench.svg';
+// import css
 import '../css/style.css';
+// import API
 import API from '../API';
 
 function My_Header(props) {
     const navigate = useNavigate();
-    const app_name = 'Content Management System'
+    // state for the modals
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showChangeNameModal, setshowChangeNameModal] = useState(false);
+    // state for the app name
+    const [appname, setAppname] = useState(props.app_name);
+    const [messageError, setMessageError] = useState('');
+    // state for the user name
     const name = props.loggedIn === true ? props.user.name : 'Login';
-
-    const handleLogoutModal = () => {
-        setShowLogoutModal(!showLogoutModal);
-    }
-
+    // function to handle the logout
     const doLogOut = async () => {
         setShowLogoutModal(false);
         await API.logOut();
         props.setUser(null);
         props.setLoggedIn(false);
         navigate('/');
+    }
+    // function to handle the change of the app name
+    const handleNameChange = (event) => {
+        event.preventDefault();
+        setMessageError('');
+        const name = event.target.name.value;
+        if (name.length < 1) {
+            setMessageError('Name cannot be empty');
+            return;
+        }
+        props.setApp_name(name);
+        doChangeName(name);
+    }
+    // function to change the app name
+    const doChangeName = async (name) => {
+        setshowChangeNameModal(false);
+        await API.changeAppName(name);
     }
 
     return (
@@ -30,46 +53,70 @@ function My_Header(props) {
                 <Navbar.Brand>
                     <Button className=" me-2" onClick={() => navigate('/')}>
                         <img src={globeLogo} className="App-logo my-svg" alt="logo" />{" "}
-                        {app_name}
+                        {props.app_name}
                     </Button>
+                    {(props.loggedIn && props.user.isAdmin === 1) ? (
+                        <Button className=" me-2" onClick={() => setshowChangeNameModal(!showChangeNameModal)}>
+                            <img src={wrenchLogo} className="App-logo my-svg" alt="logo" />{" "}
+                        </Button>
+                    ) : null}
                 </Navbar.Brand>
-                <Form className="d-flex align-items-center" >
-                    <Form.Control
-                        type="search"
-                        placeholder="Search"
-                        className="me-auto"
-                        aria-label="Search query"
-                    />
-                </Form>
                 {props.loggedIn ? (
                     <Navbar.Brand>
-                        <Button className="me-5 text-white" onClick={() => handleLogoutModal()}>
-                            <img src={personLogo} className="App-logo my-svg" alt="logo" />{" "}
+                        <Button className="me-5 text-white" onClick={() => setShowLogoutModal(!showLogoutModal)}>
+                            <img src={personLogo} className="User-logo-logo my-svg" alt="logo" />{" "}
                             {name + ' (Logout)'}
                         </Button>
                     </Navbar.Brand>
                 ) : (
                     <Navbar.Brand>
                         <Button className=" me-5 text-white" onClick={() => navigate('/login')} >
-                            <img src={personLogo} className="App-logo my-svg" alt="logo" />{" "}
+                            <img src={personLogo} className="User-logo-logo my-svg" alt="logo" />{" "}
                             {name}
                         </Button>
                     </Navbar.Brand>
                 )}
             </Container>
-            <Modal show={showLogoutModal} onHide={handleLogoutModal}>
+            <Modal show={showLogoutModal} onHide={ () => setShowLogoutModal(!showLogoutModal)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Logout Confirmation</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Are you sure you want to logout?</Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleLogoutModal}>
+                    <Button variant="secondary" onClick={ () => setShowLogoutModal(!showLogoutModal)}>
                         Cancel
                     </Button>
                     <Button variant="primary" onClick={doLogOut}>
                         Logout
                     </Button>
                 </Modal.Footer>
+            </Modal>
+            <Modal show={showChangeNameModal} onHide={() => setshowChangeNameModal(!showChangeNameModal)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Change the Application name</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleNameChange}>
+                        <Form.Group>
+                            <Form.Label>Application Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="name"
+                                value={appname}
+                                onChange={(event) => setAppname(event.target.value)}
+                            />
+                        </Form.Group>
+                        <p className="text-danger">{messageError}</p>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setshowChangeNameModal(!showChangeNameModal)}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit">
+                                Submit
+                            </Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal.Body>
             </Modal>
         </Navbar>
     );
