@@ -12,16 +12,25 @@ function App() {
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [app_name, setApp_name] = useState('');
-
+  
   useEffect(() => {
-    API.getAppName().then((name) => { setApp_name(name) });
+    API.getUserInfo().then((user) => {
+      setUser(user);
+      setLoggedIn(true);
+    }).catch((err) => { console.log(err); });
+  }, []);
+  
+  useEffect(() => {
+    API.getAppName()
+      .then((name) => { setApp_name(name) })
+      .catch((err) => { console.log(err) });
   }, [app_name]);
 
   const loginSuccessful = (user) => {
     setUser(user);
     setLoggedIn(true);
   }
-  
+
   // props for the login and header components
   const userProps = {
     user: user,
@@ -32,11 +41,12 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div style={{height:"100vh"}}>
-        <My_Header {...userProps} app_name={app_name} setApp_name={setApp_name}/>
+      <div style={{ height: "100vh" }}>
+        <My_Header {...userProps} app_name={app_name} setApp_name={setApp_name} />
         <Routes>
-          <Route path='/' element={ <My_Main {...userProps} />} />
-          <Route path='/login' element={loggedIn? <Navigate replace to='/' />:  <My_Login loginSuccessful={loginSuccessful} />} />
+          <Route path='/' element={<My_Main {...userProps} />} />
+          <Route path='/login' element={loggedIn ? <Navigate replace to='/' /> : <My_Login loginSuccessful={loginSuccessful} />} />
+          <Route path='/:filter?' element={<My_Main {...userProps} />} />
         </Routes>
         <My_Footer loggedIn={loggedIn} />
       </div>

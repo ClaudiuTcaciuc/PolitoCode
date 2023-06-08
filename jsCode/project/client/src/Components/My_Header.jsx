@@ -1,6 +1,6 @@
 // import react / bootstrap libraries
-import { Button, Container, Form, Navbar, Modal } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Button, Container, Form, Navbar, Modal, Nav } from 'react-bootstrap';
+import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 // import images
 import globeLogo from '../assets/globe-americas.svg';
@@ -61,6 +61,14 @@ function My_Header(props) {
                         </Button>
                     ) : null}
                 </Navbar.Brand>
+                {(props.loggedIn) ? (
+                    <Nav className="me-auto" activeKey={'allpages'}>
+                        <Link to="" className="nav-link">All </Link>
+                        <Link to="publicpages" className="nav-link">Public </Link>
+                        <Link to="progpages" className="nav-link">Programmed </Link>
+                        <Link to="draftpages" className="nav-link">Draft </Link>
+                    </Nav>
+                ) : null}
                 {props.loggedIn ? (
                     <Navbar.Brand>
                         <Button className="me-5 text-white" onClick={() => setShowLogoutModal(!showLogoutModal)}>
@@ -77,13 +85,13 @@ function My_Header(props) {
                     </Navbar.Brand>
                 )}
             </Container>
-            <Modal show={showLogoutModal} onHide={ () => setShowLogoutModal(!showLogoutModal)}>
+            <Modal show={showLogoutModal} onHide={() => setShowLogoutModal(!showLogoutModal)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Logout Confirmation</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Are you sure you want to logout?</Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={ () => setShowLogoutModal(!showLogoutModal)}>
+                    <Button variant="secondary" onClick={() => setShowLogoutModal(!showLogoutModal)}>
                         Cancel
                     </Button>
                     <Button variant="primary" onClick={doLogOut}>

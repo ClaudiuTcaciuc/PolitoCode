@@ -46,6 +46,7 @@ async function getPages (type) {
     });
     const data = await response.json();
     if (response.ok) {
+        console.log(data);
         return data;
     }
     else {
@@ -57,8 +58,7 @@ async function getAppName() {
     const response = await fetch(URL + "/appname");
     const data = await response.json();
     if (response.ok) {
-      console.log(data); // Stampa "CSM Small" nella console
-      return data; // Restituisce solo il valore "CSM Small"
+      return data;
     } else {
       throw data;
     }

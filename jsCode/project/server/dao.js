@@ -11,7 +11,7 @@ const db = new sqlite.Database("CSM_Small.db", (err) => {
 // get all the public pages
 exports.getPubPages = () => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT Pages.*, Users.name FROM Pages, Users WHERE Pages.author_id = Users.id AND Pages.publication_date <= date('now') ORDER BY Pages.publication_date DESC";
+        const sql = "SELECT Pages.*, Users.name FROM Pages, Users WHERE Pages.author_id = Users.id AND Pages.publication_date <= date('now', 'localtime') ORDER BY Pages.publication_date DESC";
         db.all(sql, [], (err, rows) => {
             if (err) {
                 reject(err);
@@ -23,7 +23,7 @@ exports.getPubPages = () => {
                     title: row.title,
                     author_id: row.author_id,
                     author: row.name,
-                    publication_date: dayjs(row.publication_date).format('DD/MM/YYYY'),
+                    publication_date: row.publication_date,
                 })
             );
             resolve(pages);
@@ -43,24 +43,12 @@ exports.getPages = () => {
             }
             const pages = rows.map(
                 (row) => {
-                    let pub_date = row.publication_date;
-                    if (dayjs(pub_date).isValid()) {
-                        if (dayjs(pub_date).isBefore(dayjs().add(0, 'day'))) {
-                            pub_date = dayjs(pub_date).format('DD/MM/YYYY');
-                        }
-                        else {
-                            pub_date = "Programmed for " + dayjs(pub_date).format('DD/MM/YYYY');
-                        }
-                    }
-                    else {
-                        pub_date = "Not published";
-                    }
                     return {
                         id: row.page_id,
                         title: row.title,
                         author_id: row.author_id,
                         author: row.name,
-                        publication_date: pub_date,
+                        publication_date: row.publication_date,
                     }
                 }
             );

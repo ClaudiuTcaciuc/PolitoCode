@@ -68,7 +68,7 @@ const isLoggedInAdmin = (req, res, next) => {
       return next();
     }
   }).catch((err) => {
-    return res.status(401).json({ error: 'not an admin' });
+    return err.status(401).json({ error: 'not an admin' });
   });
   
 };
