@@ -24,22 +24,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+}
 
 .my-login-form {
     display: flex;
     flex-direction: column;
     width: 25%;
-    margin-left: auto; 
+    margin-left: auto;
     margin-right: auto;
     align-content: space-around;
-  }
+}
 
 .fixed-bottom-right {
     position: fixed;
     bottom: 2em;
     right: 2em;
-  }
+}
+
 .fixed-bottom-right .btn {
     background-color: purple;
     border-color: purple;
@@ -47,7 +48,63 @@
     border-radius: 40%;
     height: 10%;
 }
+
 .fixed-bottom-right .btn:hover {
     background-color: rgb(85, 6, 85);
     border-color: purple;
+}
+
+.my-card {
+    transition: box-shadow 0.3s;
+
+}
+
+.my-card:hover {
+    transform: translate3d(-2px, -2px, -2px);
+    cursor: pointer;
+    background-image: linear-gradient(to top, rgba(255, 255, 255, 0.974), rgba(238, 220, 246, 0.956));
+}
+
+.my-card-list {
+    transition: box-shadow 0.3s;
+    background-image: linear-gradient(to top, rgba(207, 89, 89, 0), rgba(219, 183, 237, 0.5));
+}
+
+.my-card-list:hover {
+    transform: translate3d(-2px, -2px, -2px);
+    cursor: pointer;
+}
+
+.my-btn {
+    background-color: rgb(222, 22, 222);
+    border-color: rgb(254, 254, 254);
+}
+
+.my-btn:hover {
+    background-color: rgb(85, 6, 85);
+    border-color: rgb(254, 254, 254);
+}
+
+.my-page-container {
+    padding: 20px;
+}
+
+.my-page-card {
+    margin-bottom: 20px;
+}
+
+.my-page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.my-page-paragraph {
+    font-size: 16px;
+    color: #555;
+}
+
+.my-page-content {
+    text-align: justify;
+    text-justify: inter-word;
 }

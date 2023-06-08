@@ -48,7 +48,7 @@ function My_Header(props) {
     }
 
     return (
-        <Navbar className='my-header' variant="dark">
+        <Navbar className='my-header' variant="dark" expand="sm">
             <Container fluid>
                 <Navbar.Brand>
                     <Button className=" me-2" onClick={() => navigate('/')}>

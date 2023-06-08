@@ -7,17 +7,17 @@ import My_Header from './Components/My_Header'
 import My_Login from './Components/My_Login'
 import My_Footer from './Components/My_Footer'
 import My_Main from './Components/My_Main'
+import My_Page from './Components/My_Page'
 import API from './API';
 function App() {
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [app_name, setApp_name] = useState('');
-  
   useEffect(() => {
     API.getUserInfo().then((user) => {
       setUser(user);
       setLoggedIn(true);
-    }).catch((err) => { console.log(err); });
+    }).catch((err) => {});
   }, []);
   
   useEffect(() => {
@@ -47,6 +47,7 @@ function App() {
           <Route path='/' element={<My_Main {...userProps} />} />
           <Route path='/login' element={loggedIn ? <Navigate replace to='/' /> : <My_Login loginSuccessful={loginSuccessful} />} />
           <Route path='/:filter?' element={<My_Main {...userProps} />} />
+          <Route path='/page/:id?' element={<My_Page {...userProps} />} />
         </Routes>
         <My_Footer loggedIn={loggedIn} />
       </div>

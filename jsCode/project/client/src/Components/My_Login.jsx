@@ -48,7 +48,7 @@ function My_Login(props) {
             <Form onSubmit={handleSubmit} className='my-login-form'>
                 {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                 <Form.Group controlId='email'>
-                    <Form.Label>Email</Form.Label>
+                    <Form.Label><h3>Email</h3></Form.Label>
                     <Form.Control
                         type='email'
                         placeholder='Enter email'
@@ -58,7 +58,7 @@ function My_Login(props) {
                 </Form.Group>
                 <br />
                 <Form.Group controlId='password'>
-                    <Form.Label>Password</Form.Label>
+                    <Form.Label><h3>Password</h3></Form.Label>
                     <Form.Control
                         type='password'
                         placeholder='Password'

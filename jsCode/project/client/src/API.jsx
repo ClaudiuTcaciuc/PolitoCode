@@ -1,7 +1,7 @@
 // default URL
 const URL = "http://localhost:3000/api";
 
-async function logIn (credentials) {
+async function logIn(credentials) {
     let response = await fetch(URL + "/sessions", {
         method: "POST",
         credentials: "include",
@@ -20,15 +20,15 @@ async function logIn (credentials) {
     }
 }
 
-async function logOut () {
+async function logOut() {
     await fetch(URL + "/sessions/current", {
         method: "DELETE",
         credentials: "include",
     });
 }
 
-async function getUserInfo () {
-    const response = await fetch (URL + "/sessions/current", {
+async function getUserInfo() {
+    const response = await fetch(URL + "/sessions/current", {
         credentials: "include",
     });
     const userInfo = await response.json();
@@ -36,17 +36,16 @@ async function getUserInfo () {
         return userInfo;
     }
     else {
-        throw userInfo; 
+        throw userInfo;
     }
 }
 
-async function getPages (type) {
-    const response = await fetch (URL + "/" + type, {
+async function getPages(type) {
+    const response = await fetch(URL + "/" + type, {
         credentials: "include",
     });
     const data = await response.json();
     if (response.ok) {
-        console.log(data);
         return data;
     }
     else {
@@ -58,22 +57,31 @@ async function getAppName() {
     const response = await fetch(URL + "/appname");
     const data = await response.json();
     if (response.ok) {
-      return data;
+        return data;
     } else {
-      throw data;
+        throw data;
     }
-  }
-  
+}
 
-async function changeAppName (name) {
+async function getPageContent(id) {
+    const response = await fetch(URL + "/page/" + id);
+    const data = await response.json();
+    if (response.ok) {
+        return data;
+    } else {
+        throw data;
+    }
+}
+
+async function changeAppName(name) {
     try {
-        const response = await fetch (URL + "/changeappname", {
+        const response = await fetch(URL + "/changeappname", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify({application_name: name}),
+            body: JSON.stringify({ application_name: name }),
         });
         if (!response.ok) {
             throw new Error("HTTP error, status = " + response.status);
@@ -87,5 +95,5 @@ async function changeAppName (name) {
     }
 }
 
-const API = { logIn, logOut, getUserInfo, getPages, getAppName, changeAppName };
+const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, changeAppName };
 export default API;

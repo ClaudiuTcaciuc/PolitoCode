@@ -125,6 +125,7 @@ app.get("/api/sessions/current", (req, res) => {
   }
 });
 
+
 // GET: api/publicpages -> get all public pages to show in home page
 app.get("/api/publicpages", (req, res) => {
   dao.getPubPages()
@@ -141,6 +142,29 @@ app.get("/api/allpages", isLoggedIn, (req, res) => {
       conditionalTimeout( () => res.json(pages) );
     } )
     .catch( (err) => res.status(500).json( err ) );
+});
+
+// GET: api/page/:id -> get page content by id
+app.get("/api/page/:id", async (req, res) => {
+  try{
+    console.log(req.params.id);
+    const id = parseInt(req.params.id);
+    if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+    }
+    const blocks = await dao.getPageContent(id);
+    const page = await dao.getPageByID(blocks[0].page_id);
+
+    const result = {  
+      page: page,
+      content: blocks
+    };
+    conditionalTimeout( () => res.json(result) );
+  }
+  catch (err){
+    res.status(500).json(err);
+  }
 });
 
 // PUT: api/changeappname -> change app name
@@ -174,6 +198,7 @@ app.put("/api/changeappname", isLoggedIn, (req, res) => {
   });
 });
 
+// GET: api/appname -> get app name
 app.get("/api/appname", (req, res) => {
   fs.readFile('./appname.json', 'utf8', (err, data) => {
     if (err) {
