@@ -157,7 +157,7 @@ app.get("/api/page/:id", async (req, res) => {
     const page = await dao.getPageByID(blocks[0].page_id);
 
     const result = {  
-      page: page,
+      page_info: page,
       content: blocks
     };
     conditionalTimeout( () => res.json(result) );

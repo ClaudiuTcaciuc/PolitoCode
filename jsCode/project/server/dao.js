@@ -80,7 +80,7 @@ exports.getPageByID = (id) => {
 
 exports.getPageContent = (pageId) => {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT ContentBlocks.*, Pages.title FROM ContentBlocks, Pages WHERE ContentBlocks.page_id = ? AND Pages.page_id = ContentBlocks.page_id ";
+        const sql = "SELECT ContentBlocks.*, Pages.title FROM ContentBlocks, Pages WHERE ContentBlocks.page_id = ? AND Pages.page_id = ContentBlocks.page_id ORDER BY ContentBlocks.order_index ASC";
         db.all(sql, [pageId], (err, rows) => {
             if (err) {
                 reject(err);

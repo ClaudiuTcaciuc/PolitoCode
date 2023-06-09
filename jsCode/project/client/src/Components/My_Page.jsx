@@ -7,64 +7,81 @@ import API from '../API';
 import dayjs from 'dayjs';
 // import css
 import '../css/style.css';
+// import logo
+import deleteLogo from '../assets/trash-fill.svg';
+import editLogo from '../assets/gear-wide-connected.svg';
 
 
 function My_Page(props) {
-    const [content, setContent] = useState([]);
+    const [pageContent, setPageContent] = useState([]);
     const { id } = useParams();
     const navigate = useNavigate();
-    const editable = (props.loggedIn && (props.user.isAdmin === 1 || props.user.id === content.page.author_id));
+    const editable = (props.loggedIn && (props.user.isAdmin === 1 || props.user.id === pageContent.page_info.author_id));
     useEffect(() => {
         API.getPageContent(id)
-            .then(data => setContent(data))
+            .then(data => setPageContent(data)
+            // soluzione alternativa per non fare una useEffect aggiuntiva quando edito
+            // localStorage.setItem('page', JSON.stringify(data))
+            )
             .catch(err => console.log(err));
     }, []);
 
-    if (content.length === 0) return (<div></div>);
+    if (pageContent.length === 0) return (<div className='d-flex justify-content-center'>
+      <Spinner animation="border" role="status"> </Spinner>
+      {' '}Loading
+    </div>);
+    console.log(pageContent);
 
-    function content_type_view(block) {
-        switch (block.block_type) {
-            case 1:
-                return <h3 key={block.block_id}>{block.content}</h3>
-            case 2:
-                return <p key={block.block_id}>{block.content}</p>
-            default:
-                null
-        }
-    }
+  function content_type_view(block) {
+    return (
+      <Card key={block.block_id} className="my-card-container">
+        <Card.Body>
+          {block.block_type === 1 ? (
+            <Card.Title>{block.content}</Card.Title>
+          ) : block.block_type === 2 ? (
+            <Card.Text>{block.content}</Card.Text>
+          ) : null}
+        </Card.Body>
+      </Card>
+    )
+  }
     return (
         <Row>
             <Col >
-                <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', overflow: 'scroll initial' }}>
-                    <div className='bg-light' style={{ flex: '0 0 69%' }}>
+                <div className="author-info">
+                    <div className="bg-light author-info-container p-2">
                         <div style={{ padding: '10px' }}>
-                            <Container fluid>
-                                <Badge bg="secondary">Autore</Badge> {content.page.author}
+                          <Container fluid>
+                              <Badge className='my-badge'>Autore</Badge> {pageContent.page_info.author}
                             </Container>
                             <Container fluid>
-                                <Badge bg="secondary">Data</Badge> {content.page.publication_date}
-                            </Container>
+                              <Badge className='my-badge'>Data</Badge> {pageContent.page_info.publication_date}
+                          </Container>
                         </div>
                     </div>
                 </div>
             </Col>
             <Col xs={6}>
-                <div className="text-center">
-                    <h1>{content.page.title}</h1>
+                <div className="my-page-title">
+                    <h1>{pageContent.page_info.title}</h1>
                 </div>
                 <div className='my-page-content'>
-                    {content.content.map((block) => content_type_view(block))}
+                    {pageContent.content.map((block) => content_type_view(block))}
                 </div>
             </Col>
             <Col>
                 <Container fluid className='mt-3 d-flex justify-content-center'>
                     {editable ? 
-                        <Button variant="primary" onClick={() => navigate(`/edit/${id}`)}>Modifica</Button>
+                        <Button className='my-btn' variant="primary" onClick={() => navigate(`/edit_page/${id}`)}>
+                            <img src={editLogo} className='my-svg' />
+                        </Button>
                         : null}
                 </Container>
                 <Container fluid className='mt-3 d-flex justify-content-center'>
                     {editable ? 
-                        <Button variant="danger" onClick={() => navigate(`/edit/${id}`)}>Elimina</Button>
+                        <Button className='my-btn' variant="danger" onClick={() => navigate(`/edit/${id}`)}>
+                            <img src={deleteLogo} className='my-svg' />
+                        </Button>
                         : null}
                 </Container>
             </Col>
