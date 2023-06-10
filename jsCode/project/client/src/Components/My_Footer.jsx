@@ -11,9 +11,11 @@ function My_Footer(props) {
         <Container fluid>
             {props.loggedIn && (
                 <div className='fixed-bottom-right'>
-                    <Button variant="primary">
-                        <img src={plusLogo} className="App-logo my-svg" alt="logo" />
-                    </Button>
+                    <Link to='/add_page' className='my-link'>
+                        <Button variant="primary">
+                            <img src={plusLogo} className="App-logo my-svg" alt="logo" />
+                            </Button>
+                    </Link>
                 </div>
             )}
         </Container>

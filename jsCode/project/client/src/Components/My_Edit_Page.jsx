@@ -81,12 +81,46 @@ function My_Edit_Page(props) {
       stop_editing();
     };
 
+    const handleFocus = (event) => {
+      if (event.target.innerText === "Double Click To Modify") {
+        event.target.innerText = "";
+      }
+    };
+
+    function renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, show_add, isDragging) {
+      const BlockElement = block.block_type === 1 ? Card.Title : block.block_type === 2 ? Card.Text : null;
+    
+      if (!BlockElement) return null;
+    
+      return (
+        <BlockElement
+          contentEditable={edit}
+          onDoubleClick={handleDoubleClick}
+          onBlur={handleBlur}
+          suppressContentEditableWarning
+          className={edit ? 'content-editable' : ''}
+          onFocus={handleFocus}
+        >
+          {block.content !== null && block.content !== '' ? block.content : 'Double Click To Modify'}
+          {show_add && !isDragging && editable_block === null ? (
+            <>
+              <Button variant="secondary" size="sm" className="hover-button-title" onClick={() => handleAdd(block.order_index, 1)}>Title</Button>
+              <Button variant="secondary" size="sm" className="hover-button-text" onClick={() => handleAdd(block.order_index, 2)}>Text</Button>
+              <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
+                <img src={deleteLogo} className="my-svg" alt="Delete" />
+              </Button>
+            </>
+          ) : null}
+        </BlockElement>
+      );
+    }
+
     function update_block_content(event, block_id) {
       const new_content = event.target.innerText;
       if (new_content === "") {
         handleDelete(block_id);
+        return;
       }
-      console.log(new_content);
       setPageContent((prev) => {
         const new_page_content = prev.content.map((block) => {
           if (block.block_id === block_id) {
@@ -113,9 +147,7 @@ function My_Edit_Page(props) {
 
     const handleAdd = (order_index, type) => {
       order_index = order_index - 1;
-      console.dir(pageContent.content[order_index])
-      const last_id = Math.max.apply(Math, pageContent.content.map(function(o) { return o.block_id; }))
-      console.log("last_id: " + last_id)
+      const last_id = Math.max.apply(Math, pageContent.content.map(function (o) { return o.block_id; }))
       const new_block = {
         block_id: last_id + 1,
         block_type: type,
@@ -123,7 +155,7 @@ function My_Edit_Page(props) {
         order_index: pageContent.content[order_index].order_index + 1,
         page_id: pageContent.content[order_index].page_id,
       };
-      console.log(new_block);
+      
       setPageContent((prev) => {
         const newContent = prev.content.map((block) => {
           if (block.order_index >= new_block.order_index) {
@@ -131,65 +163,20 @@ function My_Edit_Page(props) {
           }
           return block;
         });
-    
+
         newContent.splice(order_index + 1, 0, new_block);
-        console.log(newContent);
         return { ...prev, content: newContent };
       });
     };
 
     return (
-      <Card key={block.block_id}
-        className={dnd_style}
-        onMouseEnter={() => handleCardHover(block.block_id)}
-        onMouseLeave={() => handleCardLeave()}
-      >
+      <Card key={block.block_id} className={dnd_style} onMouseEnter={() => handleCardHover(block.block_id)} onMouseLeave={() => handleCardLeave()}>
         <Card.Body>
-          {isDragging ? (<img className='my-svg-dnd' src={dndLogo} alt="dnd" />) : null}
-          {block.block_type === 1 ? (
-            <Card.Title
-              contentEditable={edit}
-              onDoubleClick={handleDoubleClick}
-              onBlur={handleBlur}
-              suppressContentEditableWarning
-              className={edit ? "content-editable" : ""}
-            >
-              {block.content !== null && block.content !== "" ? block.content : "Fai doppio clic per modificare"} 
-              {(show_add && !isDragging && editable_block===null) ? (
-                <>
-                  <Button className="hover-button" onClick={() => handleAdd(block.order_index, 1)}>
-                    +
-                  </Button>
-                  <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
-                    <img src={deleteLogo} className='my-svg' alt="Delete" />
-                  </Button>
-                </>
-              ) : null}
-            </Card.Title>
-          ) : block.block_type === 2 ? (
-            <Card.Text
-              contentEditable={edit}
-              onDoubleClick={handleDoubleClick}
-              onBlur={handleBlur}
-              suppressContentEditableWarning
-              className={edit ? "content-editable" : ""}
-            >
-              {block.content !== null && block.content !== "" ? block.content : "Fai doppio clic per modificare"}
-              {(show_add && !isDragging && editable_block===null) ? (
-                <>
-                  <Button className="hover-button" onClick={() => handleAdd(block.order_index, 2)}>
-                    +
-                  </Button>
-                  <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
-                    <img src={deleteLogo} className="my-svg" alt="Delete" />
-                  </Button>
-                </>
-              ) : null}
-            </Card.Text>
-          ) : null}
+          {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
+          {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, show_add, isDragging)}
         </Card.Body>
       </Card>
-    )
+    );
   }
   // print new order
   const items = Array.from(pageContent.content);
@@ -206,7 +193,7 @@ function My_Edit_Page(props) {
     items.splice(destination.index, 0, reorderedItem);
     items.forEach((item, index) => { item.order_index = index + 1; });
     setPageContent({ ...pageContent, content: items });
-    
+
   }
   //console.log(pageContent);
   return (
