@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button, ListGroup, Badge, Row, Col, Spinner } from 'react-bootstrap';
+import { Container, Card, Button, Dropdown, DropdownButton, Badge, Row, Col, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import ContentEditable from 'react-contenteditable';
 import API from '../API';
 import dayjs from 'dayjs';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
 import dndLogo from '../assets/arrow-down-up.svg';
+import addLogo from '../assets/plus-circle-fill.svg';
 
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
@@ -32,27 +34,22 @@ function My_Edit_Page(props) {
   const navigate = useNavigate();
 
   const [editable_block, setEditableBlock] = useState(null);
+  const [hover, setHover] = useState(null);
 
   function start_editing(block_id) {
     setEditableBlock(block_id);
   }
+
   function stop_editing() {
     setEditableBlock(null);
   }
 
-  function update_block_content(event) {
-    const new_content = event.target.innerText;
-    const block_id = editable_block;
+  const handleCardHover = (block_id) => {
+    setHover(block_id);
+  }
 
-    setPageContent((prev) => {
-      const new_page_content = prev.content.map((block) => {
-        if (block.block_id === block_id) {
-          block.content = new_content;
-        }
-        return block;
-      });
-      return { ...prev, content: new_page_content };
-    });
+  const handleCardLeave = () => {
+    setHover(null);
   }
 
   useEffect(() => {
@@ -72,21 +69,81 @@ function My_Edit_Page(props) {
   function content_type_view(block, isDragging) {
     const dnd_style = isDragging ? "my-card-container-edit-dnd" : "my-card-container-edit";
     const edit = editable_block === block.block_id;
+    const show_add = hover === block.block_id;
 
     const handleDoubleClick = () => {
       start_editing(block.block_id);
     };
 
-    const handleBlur = () => {
+    const handleBlur = (event) => {
+      event.preventDefault();
+      update_block_content(event, block.block_id);
       stop_editing();
     };
 
-    const handleChange = (event) => {
-      update_block_content(event);
+    function update_block_content(event, block_id) {
+      const new_content = event.target.innerText;
+      if (new_content === "") {
+        handleDelete(block_id);
+      }
+      console.log(new_content);
+      setPageContent((prev) => {
+        const new_page_content = prev.content.map((block) => {
+          if (block.block_id === block_id) {
+            return { ...block, content: new_content };
+          }
+          return block;
+        });
+        return { ...prev, content: new_page_content };
+      });
+    }
+
+    const handleDelete = (blockId) => {
+      setPageContent((prev) => {
+        const delContent = prev.content.find((block) => block.block_id === blockId);
+        const newContent = prev.content.filter((block) => block.block_id !== blockId);
+        newContent.forEach((block) => {
+          if (block.order_index > delContent.order_index) {
+            block.order_index = block.order_index - 1;
+          }
+        });
+        return { ...prev, content: newContent };
+      });
+    };
+
+    const handleAdd = (order_index, type) => {
+      order_index = order_index - 1;
+      console.dir(pageContent.content[order_index])
+      const last_id = Math.max.apply(Math, pageContent.content.map(function(o) { return o.block_id; }))
+      console.log("last_id: " + last_id)
+      const new_block = {
+        block_id: last_id + 1,
+        block_type: type,
+        content: "",
+        order_index: pageContent.content[order_index].order_index + 1,
+        page_id: pageContent.content[order_index].page_id,
+      };
+      console.log(new_block);
+      setPageContent((prev) => {
+        const newContent = prev.content.map((block) => {
+          if (block.order_index >= new_block.order_index) {
+            return { ...block, order_index: block.order_index + 1 };
+          }
+          return block;
+        });
+    
+        newContent.splice(order_index + 1, 0, new_block);
+        console.log(newContent);
+        return { ...prev, content: newContent };
+      });
     };
 
     return (
-      <Card key={block.block_id} className={dnd_style}>
+      <Card key={block.block_id}
+        className={dnd_style}
+        onMouseEnter={() => handleCardHover(block.block_id)}
+        onMouseLeave={() => handleCardLeave()}
+      >
         <Card.Body>
           {isDragging ? (<img className='my-svg-dnd' src={dndLogo} alt="dnd" />) : null}
           {block.block_type === 1 ? (
@@ -94,22 +151,40 @@ function My_Edit_Page(props) {
               contentEditable={edit}
               onDoubleClick={handleDoubleClick}
               onBlur={handleBlur}
-              onChange={handleChange}
               suppressContentEditableWarning
               className={edit ? "content-editable" : ""}
             >
-              {block.content}
+              {block.content !== null && block.content !== "" ? block.content : "Fai doppio clic per modificare"} 
+              {(show_add && !isDragging && editable_block===null) ? (
+                <>
+                  <Button className="hover-button" onClick={() => handleAdd(block.order_index, 1)}>
+                    +
+                  </Button>
+                  <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
+                    <img src={deleteLogo} className='my-svg' alt="Delete" />
+                  </Button>
+                </>
+              ) : null}
             </Card.Title>
           ) : block.block_type === 2 ? (
             <Card.Text
               contentEditable={edit}
               onDoubleClick={handleDoubleClick}
               onBlur={handleBlur}
-              onChange={handleChange}
               suppressContentEditableWarning
-              className={edit ? "my-card-container-edit-dnd" : ""}
+              className={edit ? "content-editable" : ""}
             >
-              {block.content}
+              {block.content !== null && block.content !== "" ? block.content : "Fai doppio clic per modificare"}
+              {(show_add && !isDragging && editable_block===null) ? (
+                <>
+                  <Button className="hover-button" onClick={() => handleAdd(block.order_index, 2)}>
+                    +
+                  </Button>
+                  <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
+                    <img src={deleteLogo} className="my-svg" alt="Delete" />
+                  </Button>
+                </>
+              ) : null}
             </Card.Text>
           ) : null}
         </Card.Body>
@@ -124,26 +199,16 @@ function My_Edit_Page(props) {
   function handleOnDragEnd(result) {
 
     if (!result.destination) return;
+
     const { source, destination } = result;
-
-    if (destination.droppableId === 'delete') {
-      setPageContent(
-        (prev) => {
-          const new_page_content = [...prev.content];
-          new_page_content.splice(source.index, 1);
-          return { ...prev, content: new_page_content };
-        },
-      );
-    } else {
-      const { source, destination } = result;
-      const items = Array.from(pageContent.content);
-      const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
-
-      setPageContent({ ...pageContent, content: items });
-    }
+    const items = Array.from(pageContent.content);
+    const [reorderedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, reorderedItem);
+    items.forEach((item, index) => { item.order_index = index + 1; });
+    setPageContent({ ...pageContent, content: items });
+    
   }
-  console.log(pageContent);
+  //console.log(pageContent);
   return (
     <>
       <Row style={{ marginRight: 0 }}>
@@ -194,7 +259,7 @@ function My_Edit_Page(props) {
 
         <Col>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button className="my-btn" variant="danger" onClick={() => navigate(`/edit_page/${id}`)}>
+            <Button id="delete" className="my-btn" variant="danger" onClick={() => navigate(`/edit_page/${id}`)}>
               <img src={deleteLogo} className="my-svg" alt="Delete" />
             </Button>
           </Container>

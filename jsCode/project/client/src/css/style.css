@@ -142,13 +142,15 @@
 }
 
 .my-badge {
-    background-color: rgb(90, 12, 90)!important;
+    background-color: rgb(90, 12, 90) !important;
     color: white;
 }
 
 .my-card-container-edit {
     border: 0.0px solid #ccc;
     padding: 0.6rem;
+    min-width: 200px;
+    min-height: 100px;
 }
 
 .my-card-container-edit .card-title {
@@ -162,22 +164,31 @@
 }
 
 .my-card-container-edit :hover {
-    transform: translate3d(-1px, -1px, -1px);
     cursor: pointer;
     background-color: rgb(237, 238, 238);
 }
 
 .my-card-container-edit-dnd {
-    background-color: rgb(237, 238, 238) ;
+    background-color: rgb(237, 238, 238);
     border: 0.1rem solid #ccc;
     padding: 0.6rem;
+}
+
+.my-card-container-edit-dnd .card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.my-card-container-edit-dnd .card-text {
+    font-size: 1rem;
+    color: #333;
 }
 
 .my-svg-dnd {
     position: absolute;
     background-color: #eee9e9;
     top: 50%;
-    left: 0%;
+    left: 100%;
     transform: translate(-50%, -50%);
     width: 30px;
     height: 25px;
@@ -186,12 +197,54 @@
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
 }
 
+.hover-button {
+    display: flex;
+    position: absolute;
+    top: 89%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 27px;
+    height: 23px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1;
+    background-color: #797474;
+}
+
+.hover-button:hover {
+    background-color: rgba(56, 42, 149, 0.603);
+}
+
 .content-editable {
     outline: none;
     border: none;
-    background-color: rgb(237, 238, 238) ;
-    padding: 0.6rem;
+    background-color: rgb(237, 238, 238);
+    min-width: 200px;
+    min-height: 100px;
+    max-width: 100%;
 }
-.show-delete-icon {
-    border: 2px dashed red; /* Esempio di stile per evidenziare l'area di eliminazione */
+
+.hover-button-del {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    width: 27px;
+    height: 23px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    z-index: 1;
+    background-color: #797474;
+    border-color: rgb(254, 254, 254);
+}
+
+.hover-button-del:hover {
+    background-color: rgba(155, 9, 38, 0.939);
+    border-color: rgb(254, 254, 254);
 }
