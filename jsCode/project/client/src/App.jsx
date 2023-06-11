@@ -16,6 +16,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [app_name, setApp_name] = useState('');
+  
   useEffect(() => {
     API.getUserInfo().then((user) => {
       setUser(user);

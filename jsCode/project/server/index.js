@@ -150,8 +150,8 @@ app.get("/api/page/:id", async (req, res) => {
     console.log(req.params.id);
     const id = parseInt(req.params.id);
     if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
+        res.status(400).json({ error: 'Page not found' });
+        return;
     }
     const blocks = await dao.getPageContent(id);
     const page = await dao.getPageByID(blocks[0].page_id);
