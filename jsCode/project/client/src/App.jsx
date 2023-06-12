@@ -21,9 +21,11 @@ function App() {
     API.getUserInfo().then((user) => {
       setUser(user);
       setLoggedIn(true);
-    }).catch((err) => {});
+    }).catch((err) => {
+      // do nothing the user is not logged in yet
+    });
   }, []);
-  
+
   useEffect(() => {
     API.getAppName()
       .then((name) => { setApp_name(name) })

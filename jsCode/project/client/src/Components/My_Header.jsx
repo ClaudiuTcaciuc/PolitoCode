@@ -44,7 +44,14 @@ function My_Header(props) {
     // function to change the app name
     const doChangeName = async (name) => {
         setshowChangeNameModal(false);
+        console.log(props.user);
         await API.changeAppName(name);
+        console.log(props.user);
+    }
+
+    const handleNameChangeCancel = () => {
+        setshowChangeNameModal(false);
+        setAppname(props.app_name);
     }
 
     return (
@@ -99,7 +106,7 @@ function My_Header(props) {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            <Modal show={showChangeNameModal} onHide={() => setshowChangeNameModal(!showChangeNameModal)}>
+            <Modal show={showChangeNameModal} onHide={() => handleNameChangeCancel()}>
                 <Modal.Header closeButton>
                     <Modal.Title>Change the Application name</Modal.Title>
                 </Modal.Header>
@@ -116,7 +123,7 @@ function My_Header(props) {
                         </Form.Group>
                         <p className="text-danger">{messageError}</p>
                         <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setshowChangeNameModal(!showChangeNameModal)}>
+                            <Button variant="secondary" onClick={() => handleNameChangeCancel()}>
                                 Cancel
                             </Button>
                             <Button variant="primary" type="submit">

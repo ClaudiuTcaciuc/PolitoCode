@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button, Dropdown, DropdownButton, Badge, Row, Col, Spinner } from 'react-bootstrap';
+import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import ContentEditable from 'react-contenteditable';
 import API from '../API';
-import dayjs from 'dayjs';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
 import dndLogo from '../assets/arrow-down-up.svg';
-import addLogo from '../assets/plus-circle-fill.svg';
+import wrenchLogo from '../assets/wrench.svg';
 
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
@@ -36,6 +34,11 @@ function My_Edit_Page(props) {
   const [editable_block, setEditableBlock] = useState(null);
   const [hover, setHover] = useState(null);
 
+  const [title_page, setTitle_page] = useState("");
+  const [show_modal, setShow_modal] = useState(false);
+  const [set_error_title, setError_title] = useState("");
+
+  //console.log(pageContent);
   function start_editing(block_id) {
     setEditableBlock(block_id);
   }
@@ -52,9 +55,29 @@ function My_Edit_Page(props) {
     setHover(null);
   }
 
+  const handleTitleChange = (event) => {
+    event.preventDefault();
+    if (title_page.trim() === "") {
+      setError_title("Il titolo non può essere vuoto.");
+      return;
+    }
+    setPageContent((prev) => ({
+      ...prev,
+      page_info: {
+        ...prev.page_info,
+        title: title_page,
+      },
+    }));
+    setError_title("");
+    setShow_modal(false);
+  };
+  
   useEffect(() => {
     API.getPageContent(id)
-      .then((data) => setPageContent(data))
+      .then((data) => {
+        setPageContent(data)
+        setTitle_page(data.page_info.title);
+      })
       .catch((err) => console.log(err));
   }, []);
 
@@ -76,12 +99,16 @@ function My_Edit_Page(props) {
     };
 
     const handleBlur = (event) => {
+      // fix for content changing on the button text or title
+      if (event.target.nodeName === "BUTTON")
+        return;
       event.preventDefault();
       update_block_content(event, block.block_id);
       stop_editing();
     };
 
     const handleFocus = (event) => {
+      console.log("focus");
       if (event.target.innerText === "Double Click To Modify") {
         event.target.innerText = "";
       }
@@ -89,9 +116,9 @@ function My_Edit_Page(props) {
 
     function renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, show_add, isDragging) {
       const BlockElement = block.block_type === 1 ? Card.Title : block.block_type === 2 ? Card.Text : null;
-    
+
       if (!BlockElement) return null;
-    
+
       return (
         <BlockElement
           contentEditable={edit}
@@ -102,7 +129,7 @@ function My_Edit_Page(props) {
           onFocus={handleFocus}
         >
           {block.content !== null && block.content !== '' ? block.content : 'Double Click To Modify'}
-          {show_add && !isDragging && editable_block === null ? (
+          {!isDragging && editable_block === null ? (
             <>
               <Button variant="secondary" size="sm" className="hover-button-title" onClick={() => handleAdd(block.order_index, 1)}>Title</Button>
               <Button variant="secondary" size="sm" className="hover-button-text" onClick={() => handleAdd(block.order_index, 2)}>Text</Button>
@@ -148,6 +175,7 @@ function My_Edit_Page(props) {
     const handleAdd = (order_index, type) => {
       order_index = order_index - 1;
       const last_id = Math.max.apply(Math, pageContent.content.map(function (o) { return o.block_id; }))
+
       const new_block = {
         block_id: last_id + 1,
         block_type: type,
@@ -155,7 +183,7 @@ function My_Edit_Page(props) {
         order_index: pageContent.content[order_index].order_index + 1,
         page_id: pageContent.content[order_index].page_id,
       };
-      
+
       setPageContent((prev) => {
         const newContent = prev.content.map((block) => {
           if (block.order_index >= new_block.order_index) {
@@ -178,10 +206,6 @@ function My_Edit_Page(props) {
       </Card>
     );
   }
-  // print new order
-  const items = Array.from(pageContent.content);
-  const order = items.map((item) => item.block_id);
-  //console.log(order);
 
   function handleOnDragEnd(result) {
 
@@ -193,9 +217,8 @@ function My_Edit_Page(props) {
     items.splice(destination.index, 0, reorderedItem);
     items.forEach((item, index) => { item.order_index = index + 1; });
     setPageContent({ ...pageContent, content: items });
-
   }
-  //console.log(pageContent);
+
   return (
     <>
       <Row style={{ marginRight: 0 }}>
@@ -216,7 +239,40 @@ function My_Edit_Page(props) {
         <DragDropContext onDragEnd={handleOnDragEnd}>
           <Col xs={6} >
             <div className="my-page-title">
-              <h1>{pageContent.page_info.title}</h1>
+              <h1>
+                {pageContent.page_info.title}
+                <Button variant='secondary' className="my-edit-title" onClick={() => setShow_modal(!show_modal)}>
+                  <img src={wrenchLogo} alt="logo" />{" "}
+                </Button>
+                <Modal show={show_modal} onHide={() => setShow_modal(!show_modal)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Change the Title of the Page</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Form onSubmit={handleTitleChange}>
+                      <Form.Group>
+                        <Form.Label>Page Title</Form.Label>
+                        <Form.Control
+                          type="text"
+                          title="title"
+                          value={title_page}
+                          placeholder="Enter the new title of the page"
+                          onChange={(event) => setTitle_page(event.target.value)}
+                        />
+                      </Form.Group>
+                      <p className="text-danger">{set_error_title}</p>
+                      <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShow_modal(!show_modal)}>
+                          Cancel
+                        </Button>
+                        <Button variant="primary" type="submit">
+                          Submit
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  </Modal.Body>
+                </Modal>
+              </h1>
             </div>
             <div className='d-flex'>
               <StrictModeDroppable droppableId="content">
@@ -228,6 +284,7 @@ function My_Edit_Page(props) {
                           <div ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
+                            className='p-2'
                           >
                             {
                               content_type_view(block, snapshot.isDragging)

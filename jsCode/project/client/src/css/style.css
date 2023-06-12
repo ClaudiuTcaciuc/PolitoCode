@@ -144,10 +144,11 @@
 .my-badge {
     background-color: rgb(90, 12, 90) !important;
     color: white;
+    
 }
 
 .my-card-container-edit {
-    border: 0.0px solid #ccc;
+    border: 0.1rem solid #ccc;
     padding: 0.6rem;
     min-width: 200px;
     min-height: 100px;
@@ -156,6 +157,7 @@
 .my-card-container-edit .card-title {
     font-size: 1.25rem;
     font-weight: bold;
+    
 }
 
 .my-card-container-edit .card-text {
@@ -164,6 +166,7 @@
 }
 
 .my-card-container-edit :hover {
+    border: none;
     cursor: pointer;
     background-color: rgb(237, 238, 238);
 }
@@ -200,47 +203,51 @@
 .hover-button-text {
     display: flex;
     position: absolute;
-    top: 89%;
-    left: 45%;
+    top: 92%;
+    left: 85%;
     transform: translate(-50%, -50%);
     width: 27px;
     height: 23px;
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: 50%;
     cursor: pointer;
     z-index: 1;
-    background-color: #797474;
+    background-color: #6c6d6c;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
 }
 
 .hover-button-title {
     display: flex;
     position: absolute;
-    top: 89%;
-    left: 55%;
+    top: 92%;
+    left: 95%;
     transform: translate(-50%, -50%);
     width: 27px;
     height: 23px;
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: 50%;
     cursor: pointer;
     z-index: 1;
-    background-color: #797474;
+    background-color: #6c6d6c;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
 }
 
-.hover-button:hover {
-    background-color: rgba(56, 42, 149, 0.603);
+.hover-button-title:hover {
+    background-color: rgba(12, 60, 30, 0.603);
+}
+
+.hover-button-text:hover {
+    background-color: rgba(12, 60, 30, 0.603);
 }
 
 .content-editable {
     outline: none;
     border: none;
-    background-color: rgb(237, 238, 238);
+    overflow: hidden;
     min-width: 200px;
-    min-height: 100px;
+    min-height: 50px;
     max-width: 100%;
 }
 
@@ -282,4 +289,21 @@
   
 .my-paragraph-new {
     font-size: 16px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.my-edit-title {
+    background-color: white;
+    border: none;
+}
+
+
+.my-edit-title:hover {
+    background-color: white;
+    border: none;
+    transform: translate(-1px, -1px);
 }

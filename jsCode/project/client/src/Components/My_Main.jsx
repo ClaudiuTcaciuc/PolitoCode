@@ -24,7 +24,9 @@ function My_Row(props) {
                         <Card.Body >
                             <Card.Title>{page.title}</Card.Title>
                             <Card.Text variant="flush">
-                                <Badge bg="secondary">Data</Badge> {dayjs(page.publication_date).format('MMMM D, YYYY')}
+                                <Badge bg="secondary">Data</Badge> { 
+                                    (dayjs(page.publication_date).isValid()) ? (dayjs(page.publication_date).format("MMMM DD, YYYY")) : "To be Defined"
+                                }
                             </Card.Text>
                             <Card.Text variant="flush">
                                 <Badge bg="secondary">Autore</Badge> {page.author}

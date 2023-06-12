@@ -87,6 +87,7 @@ async function changeAppName(name) {
             throw new Error("HTTP error, status = " + response.status);
         }
         const data = await response.text();
+        console.log(data);
         return data;
     }
     catch (err) {

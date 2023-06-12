@@ -180,7 +180,7 @@ function My_Add_Page(props) {
       setTimeout(() => {
         setSave_message('');
         setValidated(false);
-      }, 1000);
+      }, 3000);
     }
   }
 

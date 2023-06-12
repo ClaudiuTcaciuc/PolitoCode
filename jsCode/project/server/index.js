@@ -63,14 +63,10 @@ const isLoggedIn = (req, res, next) => {
 
 // check if the user is logged in and is an admin
 const isLoggedInAdmin = (req, res, next) => {
-  user_dao.getUserById(req.user.id).then((user) => {
-    if (user && user.isAdmin === 1) {
-      return next();
-    }
-  }).catch((err) => {
-    return err.status(401).json({ error: 'not an admin' });
-  });
-  
+  if (req.isAuthenticated() && req.user.isAdmin) {
+    return next();
+  }
+  return res.status(401).json({ error: 'not authenticated or not admin' });
 };
 
 // set-up session
@@ -109,7 +105,7 @@ app.post("/api/sessions", function (req, res, next) {
 });
 
 // DELETE: /api/sessions/current -> logout
-app.delete("/api/sessions/current", (req, res) => {
+app.delete("/api/sessions/current", isLoggedIn, (req, res) => {
   req.logout ( () => {
     res.end();
   });
@@ -147,7 +143,6 @@ app.get("/api/allpages", isLoggedIn, (req, res) => {
 // GET: api/page/:id -> get page content by id
 app.get("/api/page/:id", async (req, res) => {
   try{
-    console.log(req.params.id);
     const id = parseInt(req.params.id);
     if( isNaN(id) ){
         res.status(400).json({ error: 'Page not found' });
@@ -168,34 +163,16 @@ app.get("/api/page/:id", async (req, res) => {
 });
 
 // PUT: api/changeappname -> change app name
-app.put("/api/changeappname", isLoggedIn, (req, res) => {
-  if (!isLoggedInAdmin){
-    res.status(401).send("Unauthorized");
-    return;
-  }
+app.put("/api/changeappname", isLoggedInAdmin, (req, res) => {
   const updateData = req.body;
-  fs.readFile('./appname.json', 'utf8', (err, data) => {
+  fs.writeFile('./appname.json', JSON.stringify(updateData), (err) => {
     if (err){
       res.status(500).send("Internal server error");
       return;
     }
-    let data_json;
-    try {
-      data_json = JSON.parse(data);
-    }
-    catch (err) {
-      res.status(500).send("Internal server error");
-      return;
-    }
-    const updateJSON = {... data_json, ...updateData};
-    fs.writeFile('./appname.json', JSON.stringify(updateJSON), (err) => {
-      if (err){
-        res.status(500).send("Internal server error");
-        return;
-      }
-      res.status(200).send("App name changed");
-    });
+    res.status(200).send("App name changed");
   });
+
 });
 
 // GET: api/appname -> get app name
