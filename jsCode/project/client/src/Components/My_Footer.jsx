@@ -14,7 +14,7 @@ function My_Footer(props) {
                     <Link to='/add_page' className='my-link'>
                         <Button variant="primary">
                             <img src={plusLogo} className="App-logo my-svg" alt="logo" />
-                            </Button>
+                        </Button>
                     </Link>
                 </div>
             )}

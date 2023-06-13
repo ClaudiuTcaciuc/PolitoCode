@@ -96,5 +96,68 @@ async function changeAppName(name) {
     }
 }
 
-const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, changeAppName };
+async function createPage(page) {
+    try {
+        const response = await fetch(URL + "/add_page", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(page),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function deletePage(id) {
+    try {
+        const response = await fetch(URL + "/delete_page/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function editPage(page, id) {
+    try {
+        const response = await fetch(URL + "/edit_page/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(page),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
+                changeAppName, createPage, deletePage, editPage };
 export default API;

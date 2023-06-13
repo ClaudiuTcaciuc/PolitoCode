@@ -307,3 +307,8 @@
     border: none;
     transform: translate(-1px, -1px);
 }
+
+.placeholder-text {
+    color: gray;
+    font-size: 12px;
+}

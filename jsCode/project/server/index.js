@@ -192,6 +192,97 @@ app.get("/api/appname", (req, res) => {
   });
 });
 
+// POST: api/add_page -> add a new page
+app.post("/api/add_page", isLoggedIn, [
+  check("title").isLength({ min: 1 }),
+  check("creation_date").custom( (value) => {
+    if (value !== null) {
+      const date = dayjs(value).isValid();
+      if (!date) {
+        throw new Error("Invalid creation date");
+      }
+    }
+    return true;
+  }),
+  check("blocks").isArray({ min: 2 }).custom( (value) => {
+    if (value !== null){
+      const hasHeader = value.some( (block) => block.type === 1 && block.content.trim() !== "" );
+      const hasParagraph = value.some( (block) => block.type === 2 && block.content.trim() !== "" );
+      const hadContent = value.filter ( (block) => block.content.trim() === "" ).length>=1;
+      if (!hasHeader || !hasParagraph || hadContent) {
+        throw new Error("Invalid blocks");
+      }
+    }
+    return true;
+  }),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({ errors: errors.array() });
+    return;
+  }
+  const request_body = req.body;
+  const page = {
+    title: request_body.title,
+    author_id: req.user.id,
+    creation_date: request_body.creation_date,
+    publication_date: dayjs(request_body.publication_date).isValid() ? dayjs(request_body.publication_date).format("YYYY-MM-DD") : "Draft",
+  }
+
+  try {
+    const page_id = await dao.insertPage(page);
+    if (page_id === -1) {
+      res.status(500).json( { error: "Internal server error" } );
+      return;
+    }
+    
+    for (const block of request_body.blocks) {
+      const new_block = {
+        page_id: page_id,
+        block_type: block.type,
+        content: block.content,
+        order_index: block.order_index + 1
+      };
+      
+      try {
+        await dao.insertContentBlock(new_block);
+      } catch (err) {
+        res.status(500).json( { error: "Internal server error" } );
+        return;
+      }
+    }
+    res.status(200).json({ id: page_id });
+  } catch (err) {
+    res.status(500).json( { error: "Internal server error" } );
+    return;
+  }
+});
+
+// PUT: api/edit_page/:id -> edit a page by id
+
+
+// DELETE: api/page/:id -> delete a page by id and the related content
+app.delete('/api/delete_page/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+  const page = await dao.getPageByID(id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id || !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  try{
+    await dao.deleteContentPage(id);
+    await dao.deletePage(id);
+    res.status(200).json({ message: 'Page deleted' });
+  }
+  catch(err){
+    res.status(500).json(err);
+  }
+});
+
 // activate the server
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);

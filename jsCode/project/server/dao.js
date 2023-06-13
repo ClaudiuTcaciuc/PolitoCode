@@ -101,3 +101,94 @@ exports.getPageContent = (pageId) => {
         });
     });
 };
+
+exports.insertPage = (page) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO Pages(title, author_id, creation_date, publication_date) VALUES(?, ?, ?, ?)";
+        db.run(sql, [page.title, page.author_id, page.creation_date, page.publication_date], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.lastID);
+        });
+    });
+};
+
+exports.insertContentBlock = (block) => {
+    return new Promise((resolve, reject) => {
+        const sql = "INSERT INTO ContentBlocks (page_id, block_type, content, order_index) VALUES (?, ?, ?, ?)";
+        db.run(sql, [block.page_id, block.block_type, block.content, block.order_index], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.chanes);
+        });
+    });
+};
+
+exports.updatePage = (page) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE Pages SET title = ?, author_id = ?, publication_date = ? WHERE page_id = ?";
+        db.run(sql, [page.title, page.author_id, page.publication_date, page.page_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.lastID);
+        });
+    });
+};
+
+exports.updateContentBlock = (block) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE ContentBlocks SET block_type = ?, content = ?, order_index = ? WHERE block_id = ?";
+        db.run(sql, [block.block_type, block.content, block.order_index, block.block_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+
+exports.getContentBlock = (blockId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM ContentBlocks WHERE block_id = ?";
+        db.get(sql, [blockId], (err, row) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(row.block_id);
+        });
+    });
+};
+
+exports.deleteContentPage = (pageId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "DELETE FROM ContentBlocks WHERE page_id = ?";
+        db.run(sql, [pageId], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+
+exports.deletePage = (pageId) => {
+    return new Promise((resolve, reject) => {
+        const sql = "DELETE FROM Pages WHERE page_id = ?";
+        db.run(sql, [pageId], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};

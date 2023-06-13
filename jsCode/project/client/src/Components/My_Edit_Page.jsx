@@ -30,6 +30,7 @@ function My_Edit_Page(props) {
   const [pageContent, setPageContent] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [editable_block, setEditableBlock] = useState(null);
   const [hover, setHover] = useState(null);
@@ -38,7 +39,6 @@ function My_Edit_Page(props) {
   const [show_modal, setShow_modal] = useState(false);
   const [set_error_title, setError_title] = useState("");
 
-  //console.log(pageContent);
   function start_editing(block_id) {
     setEditableBlock(block_id);
   }
@@ -53,6 +53,18 @@ function My_Edit_Page(props) {
 
   const handleCardLeave = () => {
     setHover(null);
+  }
+
+  const doDeletePage = async () => {
+    setShowDeleteModal(false);
+    await API.deletePage(id);
+    navigate('/');
+  };
+
+  const doSavePage = async () => {
+    console.log(pageContent);
+    const json_id = await API.editPage( pageContent, id);
+    navigate('/page/' + json_id.id, { replace: true });
   }
 
   const handleTitleChange = (event) => {
@@ -71,7 +83,7 @@ function My_Edit_Page(props) {
     setError_title("");
     setShow_modal(false);
   };
-  
+
   useEffect(() => {
     API.getPageContent(id)
       .then((data) => {
@@ -92,7 +104,6 @@ function My_Edit_Page(props) {
   function content_type_view(block, isDragging) {
     const dnd_style = isDragging ? "my-card-container-edit-dnd" : "my-card-container-edit";
     const edit = editable_block === block.block_id;
-    const show_add = hover === block.block_id;
 
     const handleDoubleClick = () => {
       start_editing(block.block_id);
@@ -108,13 +119,12 @@ function My_Edit_Page(props) {
     };
 
     const handleFocus = (event) => {
-      console.log("focus");
       if (event.target.innerText === "Double Click To Modify") {
         event.target.innerText = "";
       }
     };
 
-    function renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, show_add, isDragging) {
+    function renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, isDragging) {
       const BlockElement = block.block_type === 1 ? Card.Title : block.block_type === 2 ? Card.Text : null;
 
       if (!BlockElement) return null;
@@ -128,7 +138,7 @@ function My_Edit_Page(props) {
           className={edit ? 'content-editable' : ''}
           onFocus={handleFocus}
         >
-          {block.content !== null && block.content !== '' ? block.content : 'Double Click To Modify'}
+          {block.content !== null && block.content !== '' ? block.content : "Double Click To Modify"}
           {!isDragging && editable_block === null ? (
             <>
               <Button variant="secondary" size="sm" className="hover-button-title" onClick={() => handleAdd(block.order_index, 1)}>Title</Button>
@@ -198,10 +208,10 @@ function My_Edit_Page(props) {
     };
 
     return (
-      <Card key={block.block_id} className={dnd_style} onMouseEnter={() => handleCardHover(block.block_id)} onMouseLeave={() => handleCardLeave()}>
+      <Card key={block.block_id} className={dnd_style} onMouseEnter={() => handleCardHover(block.block_id)} onMouseLeave={() => handleCardLeave()} >
         <Card.Body>
           {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
-          {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, show_add, isDragging)}
+          {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, isDragging)}
         </Card.Body>
       </Card>
     );
@@ -277,7 +287,7 @@ function My_Edit_Page(props) {
             <div className='d-flex'>
               <StrictModeDroppable droppableId="content">
                 {(provided) => (
-                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                  <div ref={provided.innerRef} {...provided.droppableProps} style={{ minWidth: "100%" }}>
                     {pageContent.content.map((block, index) => (
                       <Draggable key={block.block_id} draggableId={block.block_id.toString()} index={index}>
                         {(provided, snapshot) => (
@@ -303,8 +313,27 @@ function My_Edit_Page(props) {
 
         <Col>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="delete" className="my-btn" variant="danger" onClick={() => navigate(`/edit_page/${id}`)}>
+            <Button id="delete" className="my-btn" variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
               <img src={deleteLogo} className="my-svg" alt="Delete" />
+            </Button>
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(!showDeleteModal)}>
+              <Modal.Header closeButton>
+                <Modal.Title>Delete Confirmation</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>Are you sure you want to delete this page?</Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={() => setShowDeleteModal(!showDeleteModal)}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={() => doDeletePage()}>
+                  Confirm
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </Container>
+          <Container fluid className="mt-3 d-flex justify-content-center">
+            <Button id="save" className="my-btn" variant="success" onClick={() => doSavePage()}>
+              Save
             </Button>
           </Container>
         </Col>

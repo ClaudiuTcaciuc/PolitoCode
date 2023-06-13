@@ -44,6 +44,7 @@ function My_Main(props) {
     const { filter } = useParams();
     const [pages, setPages] = useState([]);
     const type = props.loggedIn ? 'allpages' : 'publicpages';
+
     useEffect(() => {
         API.getPages(type)
             .then(data => setPages(data))
