@@ -136,28 +136,6 @@ async function deletePage(id) {
     }
 }
 
-async function editPage(page, id) {
-    try {
-        const response = await fetch(URL + "/edit_page/" + id, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(page),
-        });
-        if (!response.ok) {
-            throw new Error("HTTP error, status = " + response.status);
-        }
-        const data = await response.json();
-        return data;
-    }
-    catch (err) {
-        console.log(err);
-        throw err;
-    }
-}
-
 async function addContentBlock (block, id) {
     try {
         const response = await fetch(URL + "/add_block/" + id, {
@@ -247,6 +225,6 @@ async function updateContentBlockOrder (pageContent) {
 }
 
 const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
-                changeAppName, createPage, deletePage, editPage, addContentBlock, 
+                changeAppName, createPage, deletePage, addContentBlock, 
                 deleteContentBlock, editContentBlock, updateContentBlockOrder };
 export default API;

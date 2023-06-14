@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form } from 'react-bootstrap';
+import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import API from '../API';
@@ -39,6 +39,7 @@ function My_Edit_Page(props) {
   const [show_modal, setShow_modal] = useState(false);
   const [set_error_title, setError_title] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [show_empty_block_alert, setShowEmptyBlockAlert] = useState(false);
 
   function start_editing(block_id) {
     setEditableBlock(block_id);
@@ -62,10 +63,15 @@ function My_Edit_Page(props) {
     navigate('/');
   };
 
-  const doSavePage = async () => {
-    console.log(pageContent);
-    const json_id = await API.editPage( pageContent, id);
-    navigate('/page/' + json_id.id, { replace: true });
+  const handleSaveClick = () => {
+    for (let block of pageContent.content) {
+      if (block.content.trim() === "") {
+        setShowEmptyBlockAlert(true);
+        return;
+      }
+    }
+    setShowEmptyBlockAlert(false);
+    navigate("/page/" + id);
   }
 
   const handleTitleChange = (event) => {
@@ -106,14 +112,12 @@ function My_Edit_Page(props) {
     const dnd_style = isDragging ? "my-card-container-edit-dnd" : "my-card-container-edit";
     const edit = editable_block === block.block_id;
 
-    const handleDoubleClick = () => {
+    const handleDoubleClick = (event) => {
       start_editing(block.block_id);
       const element = event.target;
-      const textLength = element.innerText.length;
       const selection = window.getSelection();
       const range = document.createRange();
-      range.setStart(element.firstChild, textLength);
-      range.setEnd(element.firstChild, textLength);
+      range.selectNodeContents(element);
       selection.removeAllRanges();
       selection.addRange(range);
       element.focus();
@@ -142,7 +146,7 @@ function My_Edit_Page(props) {
       return (
         <BlockElement
           contentEditable={edit}
-          onClick={handleDoubleClick}
+          onDoubleClick={handleDoubleClick}
           onBlur={handleBlur}
           suppressContentEditableWarning
           className={edit ? 'content-editable' : ''}
@@ -181,7 +185,6 @@ function My_Edit_Page(props) {
     }
 
     const doUpdateBlock = async (block) => {
-      console.log(block);
       await API.editContentBlock(block, id);
     };
 
@@ -263,6 +266,7 @@ function My_Edit_Page(props) {
     await API.updateContentBlockOrder(pageContent);
   };
 
+
   return (
     <>
       <Row style={{ marginRight: 0 }}>
@@ -317,8 +321,15 @@ function My_Edit_Page(props) {
                   </Modal.Body>
                 </Modal>
               </h1>
+              
             </div>
+            <>
+            {show_empty_block_alert && (
+                  <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
+                )}
+            </>
             <div className='d-flex'>
+              
               <StrictModeDroppable droppableId="content">
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.droppableProps} style={{ minWidth: "100%" }}>
@@ -366,7 +377,7 @@ function My_Edit_Page(props) {
             </Modal>
           </Container>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="save" className="my-btn" variant="success" onClick={() => navigate('/page/' + id)}>
+            <Button id="save" className="my-btn" variant="success" onClick={() => handleSaveClick()}>
               Save
             </Button>
           </Container>
