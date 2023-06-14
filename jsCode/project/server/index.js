@@ -258,8 +258,112 @@ app.post("/api/add_page", isLoggedIn, [
   }
 });
 
-// PUT: api/edit_page/:id -> edit a page by id
+// POST: api/add_block/:id -> ad an empty block to a page
+app.post("/api/add_block/:id",[
+  // make controls
+], isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+  const page = await dao.getPageByID(id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  const block = {
+    page_id: id,
+    block_type: req.body.block_type,
+    content: req.body.content,
+    order_index: req.body.order_index
+  };
+  console.log("block: ", block);
+  dao.insertContentBlock(block)
+    .then( (block_id_inserted) => {
+      console.log("block_id_inserted: ", block_id_inserted);
+      dao.scaleUpContentBlock(req.params.id, block.order_index, block_id_inserted)
+        .then( () => res.status(200).json({ id: block_id_inserted }) )
+        .catch( (err) => res.status(501).json(err) );
+    } )
+    .catch( (err) => res.status(500).json(err) );
+});
 
+// PUT: api/edit/:id -> update a block by id
+app.put('/api/edit_block/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+
+  const page = await dao.getPageByID(id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  
+  const block = await dao.getContentBlock(req.body.block_id);
+  if(block.err)
+    return res.status(404).json(block);
+  
+  const updated_block = {
+    block_id: block.block_id,
+    page_id: block.page_id,
+    block_type: block.block_type,
+    content: req.body.content,
+    order_index: block.order_index
+  };
+
+  dao.updateContentBlock(updated_block)
+    .then( () => res.status(200).json({ id: updated_block.id }) )
+    .catch( (err) => res.status(500).json(err) );
+});
+
+// PUT api/update_block_order/ -> update the order of the blocks
+app.put('/api/update_block_order/', isLoggedIn, async (req, res) => {
+  console.log("req.body: ", req.body);
+  const page = await dao.getPageByID(req.body.page_info.id);
+  if (page.err)
+    return res.status(404).json(page);
+  if (page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  const blocks = req.body.content;
+
+  const updatePromises = blocks.map((block) => {
+    const new_order_index = block.order_index;
+    const block_id = block.block_id;
+    return dao.changeIndexOrder(block_id, new_order_index);
+  });
+  
+  Promise.all(updatePromises)
+    .then(() => res.status(200).json({ message: 'Block order updated successfully' }))
+    .catch((err) => res.status(500).json(err));
+});
+
+// DELETE: api/delete_block/:id -> the id is the id of the block
+app.delete('/api/delete_block/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt (req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+  const block = await dao.getContentBlock(id);
+  if(block.err)
+    return res.status(404).json(block);
+  const page = await dao.getPageByID(block.page_id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  dao.deleteContentBlock(id)
+    .then( () => {
+      dao.rescaleOrderIndex(block.page_id, block.order_index)
+        .then( () => res.status(200).json({ message: 'Block deleted' }))
+        .catch( (err) => res.status(501).json(err));
+    })
+    .catch( (err) => res.status(502).json(err));
+});
 
 // DELETE: api/page/:id -> delete a page by id and the related content
 app.delete('/api/delete_page/:id', isLoggedIn, async (req, res) => {
@@ -271,10 +375,9 @@ app.delete('/api/delete_page/:id', isLoggedIn, async (req, res) => {
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
-  if(page.author_id !== req.user.id || !req.user.isAdmin)
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
     return res.status(401).json({ error: 'Unauthorized user' });
   try{
-    await dao.deleteContentPage(id);
     await dao.deletePage(id);
     res.status(200).json({ message: 'Page deleted' });
   }

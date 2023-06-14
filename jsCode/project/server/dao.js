@@ -7,6 +7,8 @@ const db = new sqlite.Database("CSM_Small.db", (err) => {
     if (err) throw err;
 });
 
+db.run("PRAGMA foreign_keys = ON");
+
 // get all the public pages
 exports.getPubPages = () => {
     return new Promise((resolve, reject) => {
@@ -63,7 +65,6 @@ exports.getPageByID = (id) => {
         db.get(sql, [id], (err, row) => {
             if (err) {
                 reject(err);
-
                 return;
             }
             const page = {
@@ -123,10 +124,24 @@ exports.insertContentBlock = (block) => {
                 reject(err);
                 return;
             }
-            resolve(this.chanes);
+            resolve(this.lastID);
         });
     });
 };
+
+exports.scaleUpContentBlock = (page_id, order_index, block_id) => {
+    return new Promise ((resolve, reject) => {
+        const sql = "UPDATE ContentBlocks SET order_index = order_index + 1 WHERE page_id = ? AND order_index >= ? AND block_id != ?";
+        db.run(sql, [page_id ,order_index, block_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    })
+};
+
 
 exports.updatePage = (page) => {
     return new Promise((resolve, reject) => {
@@ -162,15 +177,54 @@ exports.getContentBlock = (blockId) => {
                 reject(err);
                 return;
             }
-            resolve(row.block_id);
+            resolve(row);
         });
     });
 };
 
-exports.deleteContentPage = (pageId) => {
+exports.insertContentBlock = (block) => {
     return new Promise((resolve, reject) => {
-        const sql = "DELETE FROM ContentBlocks WHERE page_id = ?";
-        db.run(sql, [pageId], function (err) {
+        const sql = "INSERT INTO ContentBlocks (page_id, block_type, content, order_index) VALUES (?, ?, ?, ?)";
+        db.run(sql, [block.page_id, block.block_type, block.content, block.order_index], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.lastID);
+        });
+    });
+};
+
+exports.rescaleOrderIndex = (page_id, order_index) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE ContentBlocks SET order_index = order_index - 1 WHERE page_id = ? AND order_index >= ?";
+        db.run(sql, [page_id, order_index], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+
+exports.changeIndexOrder = (block_id, order_index) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE ContentBlocks SET order_index = ? WHERE block_id = ?";
+        db.run(sql, [order_index, block_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+
+exports.deleteContentBlock = (block_id) => {
+    return new Promise((resolve, reject) => {
+        const sql = "DELETE FROM ContentBlocks WHERE block_id = ?";
+        db.run(sql, [block_id], function (err) {
             if (err) {
                 reject(err);
                 return;

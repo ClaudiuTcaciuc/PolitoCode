@@ -38,6 +38,7 @@ function My_Edit_Page(props) {
   const [title_page, setTitle_page] = useState("");
   const [show_modal, setShow_modal] = useState(false);
   const [set_error_title, setError_title] = useState("");
+  const [dirty, setDirty] = useState(false);
 
   function start_editing(block_id) {
     setEditableBlock(block_id);
@@ -91,7 +92,7 @@ function My_Edit_Page(props) {
         setTitle_page(data.page_info.title);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [dirty]);
 
   if (pageContent.length === 0) {
     return (
@@ -107,6 +108,15 @@ function My_Edit_Page(props) {
 
     const handleDoubleClick = () => {
       start_editing(block.block_id);
+      const element = event.target;
+      const textLength = element.innerText.length;
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.setStart(element.firstChild, textLength);
+      range.setEnd(element.firstChild, textLength);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      element.focus();
     };
 
     const handleBlur = (event) => {
@@ -132,7 +142,7 @@ function My_Edit_Page(props) {
       return (
         <BlockElement
           contentEditable={edit}
-          onDoubleClick={handleDoubleClick}
+          onClick={handleDoubleClick}
           onBlur={handleBlur}
           suppressContentEditableWarning
           className={edit ? 'content-editable' : ''}
@@ -167,9 +177,15 @@ function My_Edit_Page(props) {
         });
         return { ...prev, content: new_page_content };
       });
+      doUpdateBlock({ block_id, content: new_content });
     }
 
-    const handleDelete = (blockId) => {
+    const doUpdateBlock = async (block) => {
+      console.log(block);
+      await API.editContentBlock(block, id);
+    };
+
+    const handleDelete = async (blockId) => {
       setPageContent((prev) => {
         const delContent = prev.content.find((block) => block.block_id === blockId);
         const newContent = prev.content.filter((block) => block.block_id !== blockId);
@@ -180,6 +196,12 @@ function My_Edit_Page(props) {
         });
         return { ...prev, content: newContent };
       });
+      doDeleteBlock(blockId);
+    };
+
+    const doDeleteBlock = async (block_id) => {
+      await API.deleteContentBlock(block_id);
+      setDirty(!dirty);
     };
 
     const handleAdd = (order_index, type) => {
@@ -205,6 +227,13 @@ function My_Edit_Page(props) {
         newContent.splice(order_index + 1, 0, new_block);
         return { ...prev, content: newContent };
       });
+
+      doAddBlock(new_block);
+    };
+
+    const doAddBlock = async (block) => {
+      await API.addContentBlock(block, id);
+      setDirty(!dirty);
     };
 
     return (
@@ -227,7 +256,12 @@ function My_Edit_Page(props) {
     items.splice(destination.index, 0, reorderedItem);
     items.forEach((item, index) => { item.order_index = index + 1; });
     setPageContent({ ...pageContent, content: items });
+    doUpdateOrder();
   }
+
+  const doUpdateOrder = async () => {
+    await API.updateContentBlockOrder(pageContent);
+  };
 
   return (
     <>
@@ -332,7 +366,7 @@ function My_Edit_Page(props) {
             </Modal>
           </Container>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="save" className="my-btn" variant="success" onClick={() => doSavePage()}>
+            <Button id="save" className="my-btn" variant="success" onClick={() => navigate('/page/' + id)}>
               Save
             </Button>
           </Container>

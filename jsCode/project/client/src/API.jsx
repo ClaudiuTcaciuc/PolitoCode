@@ -158,6 +158,95 @@ async function editPage(page, id) {
     }
 }
 
+async function addContentBlock (block, id) {
+    try {
+        const response = await fetch(URL + "/add_block/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(block),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            console.log(err);
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function editContentBlock (block, id) {
+    try {
+        const response = await fetch(URL + "/edit_block/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(block),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            console.log(err);
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function deleteContentBlock (id) {
+    try {
+        const response = await fetch(URL + "/delete_block/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function updateContentBlockOrder (pageContent) {
+    try {
+        const response = await fetch(URL + "/update_block_order/" , {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(pageContent),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
 const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
-                changeAppName, createPage, deletePage, editPage };
+                changeAppName, createPage, deletePage, editPage, addContentBlock, 
+                deleteContentBlock, editContentBlock, updateContentBlockOrder };
 export default API;
