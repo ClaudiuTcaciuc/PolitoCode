@@ -101,7 +101,7 @@ function My_Header(props) {
                     <Button variant="secondary" onClick={() => setShowLogoutModal(!showLogoutModal)}>
                         Cancel
                     </Button>
-                    <Button variant="primary" onClick={()=>doLogOut()}>
+                    <Button variant="primary" onClick={() => doLogOut()}>
                         Logout
                     </Button>
                 </Modal.Footer>

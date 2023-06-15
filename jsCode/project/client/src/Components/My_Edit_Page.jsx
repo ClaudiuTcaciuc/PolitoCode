@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form, Alert } from 'react-bootstrap';
+import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form, Alert, Carousel } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import API from '../API';
@@ -7,6 +7,8 @@ import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
 import dndLogo from '../assets/arrow-down-up.svg';
 import wrenchLogo from '../assets/wrench.svg';
+import arrowLogo from '../assets/arrow-left-circle-fill.svg'
+import saveLogo from '../assets/check-circle-fill.svg';
 
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
@@ -31,15 +33,14 @@ function My_Edit_Page(props) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
   const [editable_block, setEditableBlock] = useState(null);
-  const [hover, setHover] = useState(null);
-
   const [title_page, setTitle_page] = useState("");
   const [show_modal, setShow_modal] = useState(false);
   const [set_error_title, setError_title] = useState("");
   const [dirty, setDirty] = useState(false);
   const [show_empty_block_alert, setShowEmptyBlockAlert] = useState(false);
+  const [set_error_block, setError_block] = useState("");
+  const [images, setImages] = useState([]);
 
   function start_editing(block_id) {
     setEditableBlock(block_id);
@@ -47,14 +48,6 @@ function My_Edit_Page(props) {
 
   function stop_editing() {
     setEditableBlock(null);
-  }
-
-  const handleCardHover = (block_id) => {
-    setHover(block_id);
-  }
-
-  const handleCardLeave = () => {
-    setHover(null);
   }
 
   const doDeletePage = async () => {
@@ -77,7 +70,7 @@ function My_Edit_Page(props) {
   const handleTitleChange = (event) => {
     event.preventDefault();
     if (title_page.trim() === "") {
-      setError_title("Il titolo non può essere vuoto.");
+      setError_title("Title can not be empty");
       return;
     }
     setPageContent((prev) => ({
@@ -100,6 +93,14 @@ function My_Edit_Page(props) {
       .catch((err) => console.log(err));
   }, [dirty]);
 
+  useEffect(() => {
+    API.getAllImages()
+      .then((data) => {
+        setImages(data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   if (pageContent.length === 0) {
     return (
       <div>
@@ -109,7 +110,8 @@ function My_Edit_Page(props) {
   }
 
   function content_type_view(block, isDragging) {
-    const dnd_style = isDragging ? "my-card-container-edit-dnd" : "my-card-container-edit";
+    const dnd_style = isDragging ? "my-card-container-edit-dnd"
+      : block.content === null || block.content === '' ? "my-card-container-edit-empty" : "my-card-container-edit";
     const edit = editable_block === block.block_id;
 
     const handleDoubleClick = (event) => {
@@ -139,32 +141,104 @@ function My_Edit_Page(props) {
     };
 
     function renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, isDragging) {
-      const BlockElement = block.block_type === 1 ? Card.Title : block.block_type === 2 ? Card.Text : null;
+      const BlockElement = block.block_type === 1 ? Card.Title : Card.Text;
+      let content;
 
-      if (!BlockElement) return null;
-
+      if (block.block_type === 1 || block.block_type === 2) {
+        content = block.content !== null && block.content !== '' ? block.content : "Double Click To Modify";
+      } else {
+        if (block.block_type === 3) {
+          if (block.content === null || block.content === "") {
+            content = (
+              <Carousel slide={false}>
+                {images.map((image, index) => (
+                  <Carousel.Item key={index} onClick={() => handleUpdateFormBlockImage(image, block.block_id)}>
+                    <img src={"http://localhost:3000/" + image.image_path} className='image-show' />
+                  </Carousel.Item>
+                ))}
+              </Carousel>
+            );
+          } else {
+            content = (
+              <div onClick={() => handleUpdateFormBlockImage("", block.block_id)}>
+                <Card.Img src={"http://localhost:3000/" + block.content} className='image-show ' />
+                <div className="image-overlay"></div>
+              </div>
+            );
+          }
+        }
+      }
       return (
-        <BlockElement
-          contentEditable={edit}
-          onDoubleClick={handleDoubleClick}
-          onBlur={handleBlur}
-          suppressContentEditableWarning
-          className={edit ? 'content-editable' : ''}
-          onFocus={handleFocus}
-        >
-          {block.content !== null && block.content !== '' ? block.content : "Double Click To Modify"}
+        <>
+          {block.block_type === 1 || block.block_type === 2 ? (
+            <BlockElement
+              contentEditable={edit}
+              onDoubleClick={handleDoubleClick}
+              onBlur={handleBlur}
+              suppressContentEditableWarning
+              className={edit ? 'content-editable' : ''}
+              onFocus={handleFocus}
+            >
+              {content}
+            </BlockElement>
+          ) : (
+            <Container fluid className="d-flex justify-content-center">{content}</Container>
+          )}
           {!isDragging && editable_block === null ? (
             <>
               <Button variant="secondary" size="sm" className="hover-button-title" onClick={() => handleAdd(block.order_index, 1)}>Title</Button>
               <Button variant="secondary" size="sm" className="hover-button-text" onClick={() => handleAdd(block.order_index, 2)}>Text</Button>
-              <Button className="hover-button-del" onClick={() => handleDelete(block.block_id)}>
+              <Button variant="secondary" size="sm" className="hover-button-img" onClick={() => handleAdd(block.order_index, 3)}>Img</Button>
+              <Button className="hover-button-del" onClick={() => handleErrorDelete(block)}>
                 <img src={deleteLogo} className="my-svg" alt="Delete" />
               </Button>
             </>
           ) : null}
-        </BlockElement>
+        </>
       );
     }
+
+    const handleErrorDelete = (block) => {
+      const numHeader = pageContent.content.filter( (block) => block.block_type === 1 && block.content.trim() !== "").length;
+      const numParagraph = pageContent.content.filter( (block) => block.block_type === 2 && block.content.trim() !== "").length;
+      const numImage = pageContent.content.filter( (block) => block.block_type === 3 && block.content.trim() !== "").length;
+      if (numHeader <= 1 && block.type === 1){
+        setError_block("You must have at least one header and one paragraph or image");
+        setTimeout(() => {
+          setError_block("");
+        }, 3000);
+        return;
+      }
+      else{
+        if (numParagraph + numImage - 1 <= 0){
+          setError_block("You must have at least one header and one paragraph or image");
+          setTimeout(() => {
+            setError_block("");
+          }, 3000);
+          return;
+        }
+      }
+      handleDelete(block.block_id);
+    };
+
+    const handleUpdateFormBlockImage = (image, block_id) => {
+      const new_path = image === "" ? "" : image.image_path;
+      setPageContent((prev) => {
+        const new_page_content = prev.content.map((block) => {
+          if (block.block_id === block_id) {
+            return { ...block, content: new_path };
+          }
+          return block;
+        });
+        return { ...prev, content: new_page_content };
+      });
+      doImageUpdate(new_path, block_id);
+    }
+
+    const doImageUpdate = async (image, block_id) => {
+      await API.updateBlockImage(image, block_id);
+      setDirty(!dirty);
+    };
 
     function update_block_content(event, block_id) {
       const new_content = event.target.innerText;
@@ -240,7 +314,7 @@ function My_Edit_Page(props) {
     };
 
     return (
-      <Card key={block.block_id} className={dnd_style} onMouseEnter={() => handleCardHover(block.block_id)} onMouseLeave={() => handleCardLeave()} >
+      <Card key={block.block_id} className={dnd_style} onMouseDown={(e) => e.preventDefault()}>
         <Card.Body>
           {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
           {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, handleDelete, isDragging)}
@@ -266,6 +340,7 @@ function My_Edit_Page(props) {
     await API.updateContentBlockOrder(pageContent);
   };
 
+  console.log(props)
 
   return (
     <>
@@ -275,10 +350,13 @@ function My_Edit_Page(props) {
             <div className="bg-light author-info-container p-2">
               <div style={{ padding: '10px' }}>
                 <Container fluid>
-                  <Badge className="my-badge">Autore</Badge> {pageContent.page_info.author}
+                  <Badge className="my-badge">Autore</Badge> {pageContent.page_info.author} {" "}
+                  {props.user.isAdmin ? 
+                    <Button> edit</Button> : null}
                 </Container>
                 <Container fluid>
-                  <Badge className="my-badge">Data</Badge> {pageContent.page_info.publication_date}
+                  <Badge className="my-badge">Data</Badge> {pageContent.page_info.publication_date} {" "}
+                    <Button> edit</Button>
                 </Container>
               </div>
             </div>
@@ -321,31 +399,27 @@ function My_Edit_Page(props) {
                   </Modal.Body>
                 </Modal>
               </h1>
-              
+
             </div>
             <>
-            {show_empty_block_alert && (
-                  <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
-                )}
+              {show_empty_block_alert && (
+                <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
+              )}
+              {set_error_block !== "" && (
+                <Alert variant="danger">{set_error_block}</Alert>
+              )}
             </>
             <div className='d-flex'>
-              
+
               <StrictModeDroppable droppableId="content">
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.droppableProps} style={{ minWidth: "100%" }}>
                     {pageContent.content.map((block, index) => (
                       <Draggable key={block.block_id} draggableId={block.block_id.toString()} index={index}>
                         {(provided, snapshot) => (
-                          <div ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className='p-2'
-                          >
-                            {
-                              content_type_view(block, snapshot.isDragging)
-                            }
-                          </div>
-                        )}
+                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className='p-2' >
+                          { content_type_view(block, snapshot.isDragging)}
+                        </div>)}
                       </Draggable>
                     ))}
                     {provided.placeholder}
@@ -355,10 +429,19 @@ function My_Edit_Page(props) {
             </div>
           </Col>
         </DragDropContext>
-
         <Col>
+          <Container fluid className='mt-3 d-flex justify-content-center'>
+            <Button className='my-btn' variant="primary" onClick={() => navigate(-1)}>
+              <img src={arrowLogo} className='my-svg' />
+            </Button>
+          </Container>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="delete" className="my-btn" variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
+            <Button id="save" variant="success" onClick={() => handleSaveClick()}>
+              <img src={saveLogo} className="my-svg" alt="Save" />
+            </Button>
+          </Container>
+          <Container fluid className="mt-3 d-flex justify-content-center">
+            <Button id="delete" variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
               <img src={deleteLogo} className="my-svg" alt="Delete" />
             </Button>
             <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(!showDeleteModal)}>
@@ -375,11 +458,6 @@ function My_Edit_Page(props) {
                 </Button>
               </Modal.Footer>
             </Modal>
-          </Container>
-          <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="save" className="my-btn" variant="success" onClick={() => handleSaveClick()}>
-              Save
-            </Button>
           </Container>
         </Col>
       </Row>

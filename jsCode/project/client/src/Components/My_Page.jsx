@@ -10,6 +10,7 @@ import '../css/style.css';
 // import logo
 import deleteLogo from '../assets/trash-fill.svg';
 import editLogo from '../assets/gear-wide-connected.svg';
+import arrowLogo from '../assets/arrow-left-circle-fill.svg'
 
 
 function My_Page(props) {
@@ -47,7 +48,11 @@ function My_Page(props) {
             <Card.Title>{block.content}</Card.Title>
           ) : block.block_type === 2 ? (
             <Card.Text>{block.content}</Card.Text>
-          ) : null}
+          ) : (
+            <Container fluid className="d-flex justify-content-center">
+              <Card.Img src={"http://localhost:3000/" + block.content} className='image-show '/>
+            </Container>
+          )}
         </Card.Body>
       </Card>
     )
@@ -78,6 +83,11 @@ function My_Page(props) {
       </Col>
       <Col>
         <Container fluid className='mt-3 d-flex justify-content-center'>
+          <Button className='my-btn' variant="primary" onClick={() => navigate(-1)}>
+            <img src={arrowLogo} className='my-svg' />
+          </Button>
+        </Container>
+        <Container fluid className='mt-3 d-flex justify-content-center'>
           {editable ?
             <Button className='my-btn' variant="primary" onClick={() => navigate(`/edit_page/${id}`)}>
               <img src={editLogo} className='my-svg' />
@@ -86,7 +96,7 @@ function My_Page(props) {
         </Container>
         <Container fluid className='mt-3 d-flex justify-content-center'>
           {editable ?
-            <Button className='my-btn' variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
+            <Button  variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
               <img src={deleteLogo} className='my-svg' />
             </Button>
             : null}

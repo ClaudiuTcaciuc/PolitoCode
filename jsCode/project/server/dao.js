@@ -246,3 +246,38 @@ exports.deletePage = (pageId) => {
         });
     });
 };
+
+exports.getAllImages = () => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT * FROM Images";
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const images = rows.map(
+                (row) => {
+                    return {
+                        image_id: row.image_id,
+                        image_path: row.path,
+                    }
+                }
+            );
+            resolve(images);
+        });
+    });
+};
+
+exports.updateBlockImage = (block_id, image_path) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE ContentBlocks SET content = ? WHERE block_id = ?";
+        db.run(sql, [image_path, block_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+

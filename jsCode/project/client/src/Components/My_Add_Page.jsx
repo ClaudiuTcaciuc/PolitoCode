@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Alert, Button, Badge, Row, Col, Spinner, Form } from 'react-bootstrap';
+import { Container, Alert, Button, Badge, Row, Col, Spinner, Form, Modal, Carousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import API from '../API';
 import dayjs from 'dayjs';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
-import dndLogo from '../assets/arrow-down-up.svg';
-import addLogo from '../assets/plus-circle-fill.svg';
+import arrowLogo from '../assets/arrow-left-circle-fill.svg'
+import saveLogo from '../assets/check-circle-fill.svg';
 
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
@@ -43,6 +43,10 @@ function My_Add_Page(props) {
   const [save_message, setSave_message] = useState('');
   const [validated, setValidated] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showImageModalUpdate, setShowImageModalUpdate] = useState(false);
+  const [images, setImages] = useState([]);
   const navigate = useNavigate();
 
   if (!props.loggedIn) return (
@@ -51,9 +55,14 @@ function My_Add_Page(props) {
     </div>
   );
 
+  const doDeletePage = () => {
+    setShowDeleteModal(false);
+    navigate('/');
+  };
+
   const generateUniqueId = () => {
-    return `${Math.random().toString(36)}`
-  }
+    return Math.random().toString(36);
+  };
 
   const handleAddFormBlock = (type) => {
     const new_block = {
@@ -77,11 +86,24 @@ function My_Add_Page(props) {
     ]);
   };
 
+  const handleUpdateFormBlockImage = (image, id) => {
+    const updatedBlocks = formBlocks.map((block) => {
+      if (block.id === id) {
+        return {
+          ...block,
+          content: image.image_path
+        };
+      }
+      return block;
+    });
+    setFormBlocks(updatedBlocks);
+    setShowImageModalUpdate(false);
+  };
+
   const handleRemoveFormBlock = (index) => () => {
     setFormBlocks((prevBlocks) => prevBlocks.filter((_, i) => i !== index));
     setFormBlocks((prevBlocks) => prevBlocks.map((block, i) => ({ ...block, order_index: i })));
   };
-
   const renderFormBlocks = () => {
     return formBlocks.map((block, index) => (
       <Draggable key={block.id} draggableId={block.id.toString()} index={index}>
@@ -92,8 +114,34 @@ function My_Add_Page(props) {
             {...provided.dragHandleProps}
           >
             <Form.Group className={getBlockClassName(block.type)}>
-              <Form.Label >{block.type === 1 ? "Header" : "paragraph"}</Form.Label>
-              <Form.Control id={block.id} name="content" as="textarea" rows={3} placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
+              <Form.Label >{block.type === 1 ? "Header" : block.type === 2 ? "Paragraph" : "Image"}</Form.Label>
+              {block.type === 1 && (
+                <Form.Control id={block.id} name="content" type="text" placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
+              )}
+              {block.type === 2 && (
+                <Form.Control id={block.id} name="content" as="textarea" rows={3} placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
+              )}
+              {block.type === 3 && (
+                <>
+                  <Container className='image-show'>
+                    <img src={"http://localhost:3000/" + block.content} className="image-thumbnail" onClick={() => setShowImageModalUpdate(true)} />
+                  </Container>
+                  <Modal show={showImageModalUpdate} onHide={() => setShowImageModalUpdate(false)} centered>
+                    <Modal.Header >
+                      <Modal.Title>Select Image</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      <Carousel >
+                        {images.map((image, index) => (
+                          <Carousel.Item key={index} onClick={() => handleUpdateFormBlockImage(image, block.id)}>
+                            <img src={"http://localhost:3000/" + image.image_path} className="image-thumbnail" />
+                          </Carousel.Item>
+                        ))}
+                      </Carousel>
+                    </Modal.Body>
+                  </Modal>
+                </>
+              )}
               <Button className="my-btn" variant="secondary" onClick={handleRemoveFormBlock(index)}>
                 <img src={deleteLogo} alt="delete" className='my-svg' />
               </Button>
@@ -139,9 +187,11 @@ function My_Add_Page(props) {
 
   const handleSubmitForm = async (event) => {
     event.preventDefault();
+    setError_message('');
     const hasTitle = title.trim() !== '';
     const hasHeader = formBlocks.some((block) => block.type === 1 && block.content.trim() !== '');
     const hasParagraph = formBlocks.filter((block) => block.type === 2 && block.content.trim() !== '').length >= 1;
+    const hasImage = formBlocks.filter((block) => block.type === 3 && block.content.trim() !== '').length >= 1;
     let valid = true;
 
     const updatedBlocks = formBlocks.filter((block) => block.content.trim() !== '');
@@ -167,8 +217,8 @@ function My_Add_Page(props) {
       valid = false;
       return;
     }
-    else if (!hasParagraph) {
-      setError_message('At least 1 paragraph is required');
+    else if (!hasParagraph && !hasImage) {
+      setError_message('At least 1 paragraph or image is required');
       setTimeout(() => {
         setError_message('');
       }, 2000);
@@ -206,6 +256,24 @@ function My_Add_Page(props) {
     }
   }
 
+  const handleSelectImage = (image) => {
+    setShowImageModal(false);
+    const new_block = {
+      id: generateUniqueId(),
+      order_index: formBlocks.length,
+      type: 3,
+      content: image.image_path
+    };
+    setFormBlocks((prevBlocks) => [...prevBlocks, new_block]);
+    setShowImageModal(false);
+  };
+
+  const handleModalImage = async () => {
+    const images = await API.getAllImages();
+    setImages(images);
+    setShowImageModal(true);
+  };
+
   return (
     <>
       <Row style={{ marginRight: 0 }}>
@@ -213,7 +281,7 @@ function My_Add_Page(props) {
           <div className="author-info">
             <div className="bg-light author-info-container p-2">
               <div style={{ padding: '10px' }}>
-                <Container fluid>
+                <Container fluid className='p-2'>
                   <Badge className="my-badge">Autore</Badge> {props.user.name}
                 </Container>
               </div>
@@ -223,15 +291,29 @@ function My_Add_Page(props) {
         <Col xs={6}>
           <h1 className="mb-2 d-flex justify-content-center" id="title-page">Add New Page</h1>
           <Container fluid className="d-flex justify-content-center">
-            <Button className="my-btn " variant="secondary" style={{minWidth:"25%"}} onClick={() => handleAddFormBlock(1)}>
+            <Button className="my-btn " variant="secondary" style={{ minWidth: "25%" }} onClick={() => handleAddFormBlock(1)}>
               Add Header
             </Button>
-            <Button className="my-btn" variant="secondary" style={{minWidth:"25%"}} onClick={() => handleAddFormBlock(2)}>
+            <Button className="my-btn" variant="secondary" style={{ minWidth: "25%" }} onClick={() => handleAddFormBlock(2)}>
               Add paragraph
             </Button>
-            <Button className="my-btn" variant="secondary" style={{minWidth:"25%"}} onClick={() => handleAddFormBlock(3)}>
+            <Button className="my-btn" variant="secondary" style={{ minWidth: "25%" }} onClick={() => handleModalImage()}>
               Add Immagine
             </Button>
+            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Select Image</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Carousel >
+                  {images.map((image, index) => (
+                    <Carousel.Item key={index} onClick={() => handleSelectImage(image)}>
+                      <img src={"http://localhost:3000/" + image.image_path} className="image-thumbnail" />
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              </Modal.Body>
+            </Modal>
           </Container>
           <Form noValidate validated={validated} onSubmit={handleSubmitForm}>
             <Form.Group className='my-title-new'>
@@ -284,7 +366,7 @@ function My_Add_Page(props) {
               </Alert>
             )}
             <Container fluid className="d-flex justify-content-center p-4">
-              <Button className="my-btn" type="submit" variant="secondary" style={{width:"50%"}}>
+              <Button className="my-btn" type="submit" variant="secondary" style={{ width: "50%" }}>
                 Save
               </Button>
             </Container>
@@ -292,9 +374,28 @@ function My_Add_Page(props) {
         </Col>
         <Col>
           <Container fluid className="mt-3 d-flex justify-content-center">
-            <Button id="delete" className="my-btn" variant="danger" onClick={() => navigate('/')}>
+            <Button className='my-btn' onClick={() => navigate('/')}>
+              <img src={arrowLogo} className="my-svg" alt="Home" />
+            </Button>
+          </Container>
+          <Container fluid className="mt-3 d-flex justify-content-center">
+            <Button id="delete" variant="danger" onClick={() => setShowDeleteModal(!showDeleteModal)}>
               <img src={deleteLogo} className="my-svg" alt="Delete" />
             </Button>
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(!showDeleteModal)}>
+              <Modal.Header closeButton>
+                <Modal.Title>Delete Confirmation</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>Are you sure you want to delete this page?</Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={() => setShowDeleteModal(!showDeleteModal)}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={() => doDeletePage()}>
+                  Confirm
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </Container>
         </Col>
       </Row>

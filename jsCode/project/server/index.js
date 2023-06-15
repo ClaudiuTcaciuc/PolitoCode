@@ -209,7 +209,8 @@ app.post("/api/add_page", isLoggedIn, [
       const hasHeader = value.some( (block) => block.type === 1 && block.content.trim() !== "" );
       const hasParagraph = value.some( (block) => block.type === 2 && block.content.trim() !== "" );
       const hadContent = value.filter ( (block) => block.content.trim() === "" ).length>=1;
-      if (!hasHeader || !hasParagraph || hadContent) {
+      const hasImage = value.some((block) => block.type === 3 && block.content.trim() !== '');
+      if (!hasHeader || (!hasParagraph && !hasImage) || hadContent) {
         throw new Error("Invalid blocks");
       }
     }
@@ -384,6 +385,38 @@ app.delete('/api/delete_page/:id', isLoggedIn, async (req, res) => {
   catch(err){
     res.status(500).json(err);
   }
+});
+
+// middleware to static content -> images
+app.use(express.static('public'));
+
+// GET: api/images -> get all images
+app.get('/api/images', async (req, res) => {
+  const images = await dao.getAllImages();
+  if(images.err)
+    return res.status(500).json(images);
+  res.status(200).json(images);
+});
+
+// POST: api/update_image/:id -> upload an image
+app.put('/api/update_image/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Block not found' });
+      return;
+  }
+  const block = await dao.getContentBlock(id);
+  if(block.err)
+    return res.status(404).json(block);
+  const page = await dao.getPageByID(block.page_id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  const image_path = req.body.image_path;
+  dao.updateBlockImage(id, image_path)
+    .then( () => res.status(200).json({ message: 'Image updated' }))
+    .catch( (err) => res.status(500).json(err));
 });
 
 // activate the server

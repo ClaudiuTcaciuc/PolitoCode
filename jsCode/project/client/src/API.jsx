@@ -224,7 +224,61 @@ async function updateContentBlockOrder (pageContent) {
     }
 }
 
-const API = { logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
-                changeAppName, createPage, deletePage, addContentBlock, 
-                deleteContentBlock, editContentBlock, updateContentBlockOrder };
+async function getAllImages() {
+    const response = await fetch(URL + "/images");
+    const data = await response.json();
+    if (response.ok) {
+        return data;
+    } else {
+        throw data;
+    }
+}
+
+async function updateBlockImage(image_path, id) {
+    try {
+        const response = await fetch(URL + "/update_image/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ image_path: image_path }),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function addBlockImage(image_path, id) {
+    try {
+        const response = await fetch(URL + "/add_image/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ image_path: image_path }),
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+const API = {   logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
+                changeAppName, createPage, deletePage, addContentBlock, deleteContentBlock, 
+                editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage };
 export default API;
