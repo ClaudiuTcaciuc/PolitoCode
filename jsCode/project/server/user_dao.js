@@ -68,3 +68,36 @@ exports.getUserById = (id) => {
         });
     });
 };
+
+// get all users for admin withou password
+exports.getAllUsers = () => {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT id, name, email, isAdmin FROM Users";
+        db.all(sql, [], (err, rows) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const users = rows.map((row) => ({
+                id: row.id,
+                name: row.name,
+                email: row.email,
+                isAdmin: row.isAdmin
+            }));
+            resolve(users);
+        });
+    });
+};
+
+exports.updatePageUser = (user_id, page_id) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE Pages SET author_id = ? WHERE page_id = ?";
+        db.run(sql, [user_id, page_id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(page_id);
+        });
+    });
+};

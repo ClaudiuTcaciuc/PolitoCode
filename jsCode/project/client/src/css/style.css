@@ -115,12 +115,13 @@
 .author-info {
     display: flex;
     flex-direction: row;
-    height: 93vh;
+    height: 100vh;
 }
 
 .author-info-container {
     flex: 0 0 69%;
     padding: 10px;
+    
 }
 
 .my-page-title {

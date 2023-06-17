@@ -297,8 +297,44 @@ async function updateDatePage(new_date, id){
     }
 }
 
+async function getAllUsers() {
+    const response = await fetch(URL + "/users", {
+        credentials: "include",
+    });
+    const data = await response.json();
+    if (response.ok) {
+        return data;
+    } else {
+        throw data;
+    }
+}
+
+async function changePageUser(user_id, id) {
+    try {
+        const response = await fetch(URL + "/change_page_user/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ user_id: user_id }),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            console.log(err);
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
 const API = {   logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
                 changeAppName, createPage, deletePage, addContentBlock, deleteContentBlock, 
                 editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage, 
-                cleanEmptyBlocksInPage, updateDatePage };
+                cleanEmptyBlocksInPage, updateDatePage, getAllUsers, changePageUser };
 export default API;

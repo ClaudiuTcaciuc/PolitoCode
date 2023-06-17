@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Component } from 'react';
 import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form, Alert, Carousel } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -49,6 +49,10 @@ function My_Edit_Page(props) {
   const [show_author_modal, setShowAuthorModal] = useState(false);
   const [checked, setChecked] = useState(false);
 
+  const [list_authors, setListAuthors] = useState([]);
+  const [author, setAuthor] = useState("");
+  const [set_author_error, setAuthorError] = useState("");
+
   useEffect(() => {
     API.getPageContent(id)
       .then((data) => {
@@ -71,6 +75,12 @@ function My_Edit_Page(props) {
         setImages(data);
       })
       .catch((err) => console.log(err));
+    if(props.user.isAdmin === 1){
+      API.getAllUsers().then((res) => {
+        setListAuthors(res);
+      })
+        .catch((err) => console.log(err));
+    }
   }, []);
 
   function start_editing(block_id) {
@@ -115,8 +125,6 @@ function My_Edit_Page(props) {
     setShow_modal(false);
   };
 
-
-
   if (pageContent.length === 0 || pageContent.content === undefined || props.user === null) {
     return (
       <div>
@@ -146,7 +154,6 @@ function My_Edit_Page(props) {
           selection.addRange(range);
         }
       };
-
       element.addEventListener('mouseup', handleMouseUp);
     };
 
@@ -349,9 +356,7 @@ function My_Edit_Page(props) {
   }
 
   function handleOnDragEnd(result) {
-
     if (!result.destination) return;
-
     const { source, destination } = result;
     const items = Array.from(pageContent.content);
     const [reorderedItem] = items.splice(source.index, 1);
@@ -367,7 +372,6 @@ function My_Edit_Page(props) {
 
   const handleDateChange = (event) => {
     event.preventDefault();
-    event.stopPropagation();
     const today = dayjs().format("YYYY-MM-DD");
     if (!dayjs(pub_date).isValid() || (checked && dayjs(pub_date).isBefore(today))) {
       setPubDateError("The date must be today or in the future");
@@ -390,8 +394,21 @@ function My_Edit_Page(props) {
     setPubDateError("");
   };
 
+  const handleModalGetAuthor = () => {
+    setShowAuthorModal(true);
+  };
+
+  const handleAuthorChange = (event) => {
+    event.preventDefault();
+    const author_id = author.split(" ")[0];
+    console.log(author_id);
+    API.changePageUser(author_id, id);
+    setShowAuthorModal(false);
+    setDirty(!dirty);
+  };
+
   return (
-    <>
+    <Container fluid>
       <Row style={{ marginRight: 0 }}>
         <Col>
           <div className="author-info">
@@ -400,9 +417,32 @@ function My_Edit_Page(props) {
                 <Container fluid>
                   <Badge className="my-badge">Autore</Badge> {pageContent.page_info.author} {" "}
                   {props.user.isAdmin ?
-                    <Button className='my-btn-mod' size='sm' onClick={() => setShowAuthorModal(!show_author_modal)}>
+                    <Button className='my-btn-mod' size='sm' onClick={() => handleModalGetAuthor()}>
                       <img src={wrenchLogo} alt="logo" />{" "}
                     </Button> : null}
+                  <Modal show={show_author_modal} onHide={() => setShowAuthorModal(false)} centered>
+                    <Modal.Header closeButton>
+                      <Modal.Title>Change the Author of the Page</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      <Form onSubmit={handleAuthorChange}>
+                        <Form.Group controlId="authorSelect">
+                          <Form.Control as="select" aria-label="Default select example" onChange={(event) => setAuthor(event.target.value)}>
+                            {list_authors.map((user, index) => (
+                              <option key={index} value={user.user_id}>
+                                {user.id} {user.name} ({user.email})
+                              </option>
+                            ))}
+                          </Form.Control>
+                        </Form.Group>
+                        <Container fluid className="d-flex justify-content-center p-4">
+                          <Button variant="primary" type="submit">
+                            Submit
+                          </Button>
+                        </Container>
+                      </Form>
+                    </Modal.Body>
+                  </Modal>
                 </Container>
                 <Container fluid>
                   <Badge className="my-badge">Data</Badge> {pageContent.page_info.publication_date} {" "}
@@ -420,11 +460,11 @@ function My_Edit_Page(props) {
                           <Row>
                             <Col sm={6}>
                               <Form.Label>Page Date</Form.Label>
-                              <Form.Control type="date" title="date" name="date" disabled={!checked} onChange={(e) => setPubDate(e.target.value)}/>
+                              <Form.Control type="date" title="date" name="date" disabled={!checked} onChange={(e) => setPubDate(e.target.value)} />
                             </Col>
                             <Col sm={6}>
                               <Form.Label>Set To Draft</Form.Label>
-                              <Form.Check id="checkdate" name="checkdate" type="checkbox" onChange={() => setChecked(!checked)}/>
+                              <Form.Check id="checkdate" name="checkdate" type="checkbox" onChange={() => setChecked(!checked)} />
                             </Col>
                           </Row>
                         </Form.Group>
@@ -539,7 +579,7 @@ function My_Edit_Page(props) {
           </Container>
         </Col>
       </Row>
-    </>
+    </Container>
   );
 }
 
