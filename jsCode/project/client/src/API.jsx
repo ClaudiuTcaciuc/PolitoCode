@@ -256,15 +256,34 @@ async function updateBlockImage(image_path, id) {
     }
 }
 
-async function addBlockImage(image_path, id) {
+
+async function cleanEmptyBlocksInPage(id){
     try {
-        const response = await fetch(URL + "/add_image/" + id, {
-            method: "POST",
+        const response = await fetch(URL + "/clean_page/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+        if (!response.ok) {
+            throw new Error("HTTP error, status = " + response.status);
+        }
+        const data = await response.json();
+        return data;
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function updateDatePage(new_date, id){
+    try {
+        const response = await fetch(URL + "/update_date/" + id, {
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify({ image_path: image_path }),
+            body: JSON.stringify({ publication_date: new_date }),
         });
         if (!response.ok) {
             throw new Error("HTTP error, status = " + response.status);
@@ -280,5 +299,6 @@ async function addBlockImage(image_path, id) {
 
 const API = {   logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
                 changeAppName, createPage, deletePage, addContentBlock, deleteContentBlock, 
-                editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage };
+                editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage, 
+                cleanEmptyBlocksInPage, updateDatePage };
 export default API;

@@ -419,6 +419,42 @@ app.put('/api/update_image/:id', isLoggedIn, async (req, res) => {
     .catch( (err) => res.status(500).json(err));
 });
 
+// DELETE: api/clean_page/:id -> clean a page by id (remove empty blocks)
+app.delete('/api/clean_page/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+  const page = await dao.getPageByID(id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  dao.cleanPage(id)
+    .then( () => res.status(200).json({ message: 'Page cleaned' }))
+    .catch( (err) => res.status(500).json(err));
+});
+
+// PUT: api/update_date/:id -> update a pub date of a page
+app.put('/api/update_date/:id', isLoggedIn, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if( isNaN(id) ){
+      res.status(400).json({ error: 'Page not found' });
+      return;
+  }
+  const page = await dao.getPageByID(id);
+  if(page.err)
+    return res.status(404).json(page);
+  if(page.author_id !== req.user.id && !req.user.isAdmin)
+    return res.status(401).json({ error: 'Unauthorized user' });
+  const date = req.body.publication_date;
+  dayjs(date).isValid() ? date : "Draft";
+  dao.updatePubDate(id, date)
+    .then( () => res.status(200).json({ message: 'Date updated' }))
+    .catch( (err) => res.status(500).json(err));
+});
+
 // activate the server
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);

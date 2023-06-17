@@ -9,6 +9,7 @@ import dndLogo from '../assets/arrow-down-up.svg';
 import wrenchLogo from '../assets/wrench.svg';
 import arrowLogo from '../assets/arrow-left-circle-fill.svg'
 import saveLogo from '../assets/check-circle-fill.svg';
+import dayjs from 'dayjs';
 
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
@@ -29,9 +30,10 @@ const StrictModeDroppable = ({ children, droppableId }) => {
 };
 
 function My_Edit_Page(props) {
-  const [pageContent, setPageContent] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [pageContent, setPageContent] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editable_block, setEditableBlock] = useState(null);
   const [title_page, setTitle_page] = useState("");
@@ -41,6 +43,35 @@ function My_Edit_Page(props) {
   const [show_empty_block_alert, setShowEmptyBlockAlert] = useState(false);
   const [set_error_block, setError_block] = useState("");
   const [images, setImages] = useState([]);
+  const [show_date_modal, setShowDateModal] = useState(false);
+  const [pub_date, setPubDate] = useState("");
+  const [set_pub_date_error, setPubDateError] = useState("");
+  const [show_author_modal, setShowAuthorModal] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    API.getPageContent(id)
+      .then((data) => {
+        setPageContent(data)
+        setTitle_page(data.page_info.title);
+      })
+      .catch((err) => console.log(err));
+  }, [dirty]);
+
+  // useEffect to clean empty blocks when the page is closed or redirected
+  useEffect(() => {
+    return () => {
+      API.cleanEmptyBlocksInPage(id)
+    };
+  }, []);
+
+  useEffect(() => {
+    API.getAllImages()
+      .then((data) => {
+        setImages(data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   function start_editing(block_id) {
     setEditableBlock(block_id);
@@ -84,24 +115,9 @@ function My_Edit_Page(props) {
     setShow_modal(false);
   };
 
-  useEffect(() => {
-    API.getPageContent(id)
-      .then((data) => {
-        setPageContent(data)
-        setTitle_page(data.page_info.title);
-      })
-      .catch((err) => console.log(err));
-  }, [dirty]);
 
-  useEffect(() => {
-    API.getAllImages()
-      .then((data) => {
-        setImages(data);
-      })
-      .catch((err) => console.log(err));
-  }, []);
 
-  if (pageContent.length === 0) {
+  if (pageContent.length === 0 || pageContent.content === undefined || props.user === null) {
     return (
       <div>
         <Spinner animation="border" role="status" /> Loading
@@ -117,12 +133,21 @@ function My_Edit_Page(props) {
     const handleDoubleClick = (event) => {
       start_editing(block.block_id);
       const element = event.target;
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      element.focus();
+
+      const handleMouseUp = (mouseEvent) => {
+        element.removeEventListener('mouseup', handleMouseUp);
+        const selection = window.getSelection();
+        const range = document.createRange();
+        const caretPosition = document.caretRangeFromPoint(mouseEvent.clientX, mouseEvent.clientY);
+        if (caretPosition) {
+          range.setStart(caretPosition.startContainer, caretPosition.startOffset);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      };
+
+      element.addEventListener('mouseup', handleMouseUp);
     };
 
     const handleBlur = (event) => {
@@ -173,7 +198,7 @@ function My_Edit_Page(props) {
           {block.block_type === 1 || block.block_type === 2 ? (
             <BlockElement
               contentEditable={edit}
-              onDoubleClick={handleDoubleClick}
+              onClick={handleDoubleClick}
               onBlur={handleBlur}
               suppressContentEditableWarning
               className={edit ? 'content-editable' : ''}
@@ -199,18 +224,18 @@ function My_Edit_Page(props) {
     }
 
     const handleErrorDelete = (block) => {
-      const numHeader = pageContent.content.filter( (block) => block.block_type === 1 && block.content.trim() !== "").length;
-      const numParagraph = pageContent.content.filter( (block) => block.block_type === 2 && block.content.trim() !== "").length;
-      const numImage = pageContent.content.filter( (block) => block.block_type === 3 && block.content.trim() !== "").length;
-      if (numHeader <= 1 && block.type === 1){
+      const numHeader = pageContent.content.filter((block) => block.block_type === 1 && block.content.trim() !== "").length;
+      const numParagraph = pageContent.content.filter((block) => block.block_type === 2 && block.content.trim() !== "").length;
+      const numImage = pageContent.content.filter((block) => block.block_type === 3 && block.content.trim() !== "").length;
+      if (numHeader <= 1 && block.type === 1) {
         setError_block("You must have at least one header and one paragraph or image");
         setTimeout(() => {
           setError_block("");
         }, 3000);
         return;
       }
-      else{
-        if (numParagraph + numImage - 1 <= 0){
+      else {
+        if (numParagraph + numImage - 1 <= 0) {
           setError_block("You must have at least one header and one paragraph or image");
           setTimeout(() => {
             setError_block("");
@@ -340,7 +365,30 @@ function My_Edit_Page(props) {
     await API.updateContentBlockOrder(pageContent);
   };
 
-  console.log(props)
+  const handleDateChange = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const today = dayjs().format("YYYY-MM-DD");
+    if (!dayjs(pub_date).isValid() || (checked && dayjs(pub_date).isBefore(today))) {
+      setPubDateError("The date must be today or in the future");
+      return;
+    }
+    setPubDateError("");
+    if (checked)
+      setPubDate("Draft");
+    doDateUpdate(pub_date);
+  };
+
+  const doDateUpdate = async (new_date) => {
+    await API.updateDatePage(new_date, id);
+    setShowDateModal(false);
+    setDirty(!dirty);
+  };
+
+  const handleModalOnHide = () => {
+    setShowDateModal(false);
+    setPubDateError("");
+  };
 
   return (
     <>
@@ -351,12 +399,43 @@ function My_Edit_Page(props) {
               <div style={{ padding: '10px' }}>
                 <Container fluid>
                   <Badge className="my-badge">Autore</Badge> {pageContent.page_info.author} {" "}
-                  {props.user.isAdmin ? 
-                    <Button> edit</Button> : null}
+                  {props.user.isAdmin ?
+                    <Button className='my-btn-mod' size='sm' onClick={() => setShowAuthorModal(!show_author_modal)}>
+                      <img src={wrenchLogo} alt="logo" />{" "}
+                    </Button> : null}
                 </Container>
                 <Container fluid>
                   <Badge className="my-badge">Data</Badge> {pageContent.page_info.publication_date} {" "}
-                    <Button> edit</Button>
+                  <Button className='my-btn-mod' size='sm' onClick={() => setShowDateModal(!show_date_modal)}>
+                    <img src={wrenchLogo} alt="logo" />{" "}
+                  </Button>
+                  <Modal show={show_date_modal} onHide={() => handleModalOnHide()} centered>
+                    <Modal.Header closeButton>
+                      <Modal.Title>Change the Date of the Page</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      <Form onSubmit={handleDateChange}>
+                        {set_pub_date_error !== "" ? <Alert variant="danger">{set_pub_date_error}</Alert> : null}
+                        <Form.Group>
+                          <Row>
+                            <Col sm={6}>
+                              <Form.Label>Page Date</Form.Label>
+                              <Form.Control type="date" title="date" name="date" disabled={!checked} onChange={(e) => setPubDate(e.target.value)}/>
+                            </Col>
+                            <Col sm={6}>
+                              <Form.Label>Set To Draft</Form.Label>
+                              <Form.Check id="checkdate" name="checkdate" type="checkbox" onChange={() => setChecked(!checked)}/>
+                            </Col>
+                          </Row>
+                        </Form.Group>
+                        <Container fluid className="d-flex justify-content-center p-4">
+                          <Button variant="primary" type="submit">
+                            Submit
+                          </Button>
+                        </Container>
+                      </Form>
+                    </Modal.Body>
+                  </Modal>
                 </Container>
               </div>
             </div>
@@ -399,7 +478,6 @@ function My_Edit_Page(props) {
                   </Modal.Body>
                 </Modal>
               </h1>
-
             </div>
             <>
               {show_empty_block_alert && (
@@ -417,9 +495,9 @@ function My_Edit_Page(props) {
                     {pageContent.content.map((block, index) => (
                       <Draggable key={block.block_id} draggableId={block.block_id.toString()} index={index}>
                         {(provided, snapshot) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className='p-2' >
-                          { content_type_view(block, snapshot.isDragging)}
-                        </div>)}
+                          <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className='p-2' >
+                            {content_type_view(block, snapshot.isDragging)}
+                          </div>)}
                       </Draggable>
                     ))}
                     {provided.placeholder}

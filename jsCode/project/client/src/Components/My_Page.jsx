@@ -4,7 +4,6 @@ import { Container, Card, Button, Modal, Badge, Row, Col, Spinner } from 'react-
 import { useParams, useNavigate } from 'react-router-dom';
 // import API
 import API from '../API';
-import dayjs from 'dayjs';
 // import css
 import '../css/style.css';
 // import logo
@@ -35,10 +34,12 @@ function My_Page(props) {
     navigate('/');
   };
 
-  if (pageContent.length === 0) return (<div className='d-flex justify-content-center'>
-    <Spinner animation="border" role="status"> </Spinner>
-    {' '}Loading
-  </div>);
+  if (pageContent.length === 0 || props.user === undefined) return (
+    <div className='d-flex justify-content-center'>
+      <Spinner animation="border" role="status"> </Spinner>
+      {' '}Loading
+    </div>
+  );
   
   function content_type_view(block) {
     return (
@@ -88,7 +89,7 @@ function My_Page(props) {
           </Button>
         </Container>
         <Container fluid className='mt-3 d-flex justify-content-center'>
-          {editable ?
+          {editable ? 
             <Button className='my-btn' variant="primary" onClick={() => navigate(`/edit_page/${id}`)}>
               <img src={editLogo} className='my-svg' />
             </Button>

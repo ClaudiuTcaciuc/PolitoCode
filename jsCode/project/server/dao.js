@@ -281,3 +281,28 @@ exports.updateBlockImage = (block_id, image_path) => {
     });
 };
 
+exports.cleanPage = (page_id) => {
+    return new Promise((resolve, reject) => {
+        const sql = "DELETE FROM ContentBlocks WHERE content = '' AND page_id = ?";
+        db.run(sql, [page_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};
+
+exports.updatePubDate = (page_id, pub_date) => {
+    return new Promise((resolve, reject) => {
+        const sql = "UPDATE Pages SET publication_date = ? WHERE page_id = ?";
+        db.run(sql, [pub_date, page_id], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.changes);
+        });
+    });
+};

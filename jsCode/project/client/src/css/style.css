@@ -282,6 +282,7 @@
     min-width: 200px;
     min-height: 50px;
     max-width: 100%;
+    cursor: default!important;
 }
 
 .hover-button-del {
@@ -359,4 +360,9 @@
 
 .image-carousel {
     background-color: #971d1d!important;
+}
+
+.my-btn-mod{
+    background-color: #f8f9fa!important;
+    border: none;
 }
