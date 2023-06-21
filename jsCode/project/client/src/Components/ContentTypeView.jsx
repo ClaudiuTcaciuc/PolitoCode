@@ -1,17 +1,19 @@
-import { Container, Card, Button, Carousel } from 'react-bootstrap';
+import { useState } from 'react';
+import { Container, Card, Button, Carousel, Alert } from 'react-bootstrap';
 import API from '../API';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
 import dndLogo from '../assets/arrow-down-up.svg';
 
 function ContentTypeView(props) {
+    const [editable_block, setEditableBlock] = useState(null);
+    const [set_error_block, setError_block] = useState("");
+    
     const block = props.block;
     const isDragging = props.isDragging;
-    const editable_block = props.editable_block;
     const pageContent = props.pageContent;
     const setPageContent = props.setPageContent;
-    const start_editing = props.start_editing;
-    const stop_editing = props.stop_editing;
+    const show_empty_block_alert = props.show_empty_block_alert;
     const setDirty = props.setDirty;
     const dirty = props.dirty;
     const images = props.images;
@@ -22,7 +24,7 @@ function ContentTypeView(props) {
     const edit = editable_block === block.block_id;
 
     const handleDoubleClick = (event) => {
-        start_editing(block.block_id);
+        setEditableBlock(block.block_id);
         const element = event.target;
 
         const handleMouseUp = (mouseEvent) => {
@@ -46,7 +48,7 @@ function ContentTypeView(props) {
             return;
         event.preventDefault();
         update_block_content(event, block.block_id);
-        stop_editing();
+        setEditableBlock(null)
     };
 
     const handleFocus = (event) => {
@@ -229,12 +231,20 @@ function ContentTypeView(props) {
     };
 
     return (
+        <>
         <Card key={block.block_id} className={dnd_style} onMouseDown={(e) => e.preventDefault()}>
             <Card.Body>
                 {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
                 {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, isDragging)}
             </Card.Body>
-        </Card>
+        </Card> 
+        {show_empty_block_alert && (
+          <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
+        )}
+        {set_error_block !== "" && (
+          <Alert variant="danger">{set_error_block}</Alert>
+        )}
+      </>
     );
 }
 

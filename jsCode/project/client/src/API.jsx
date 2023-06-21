@@ -334,7 +334,7 @@ async function changePageUser(user_id, id) {
 }
 
 const API = {   logIn, logOut, getUserInfo, getPages, getPageContent, getAppName, 
-                changeAppName, createPage, deletePage, addContentBlock, deleteContentBlock, 
-                editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage, 
-                cleanEmptyBlocksInPage, updateDatePage, getAllUsers, changePageUser };
+        changeAppName, createPage, deletePage, addContentBlock, deleteContentBlock, 
+        editContentBlock, updateContentBlockOrder, getAllImages, updateBlockImage, 
+        cleanEmptyBlocksInPage, updateDatePage, getAllUsers, changePageUser };
 export default API;

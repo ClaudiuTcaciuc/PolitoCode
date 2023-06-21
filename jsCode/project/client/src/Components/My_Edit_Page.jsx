@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Button, Modal, Badge, Row, Col, Spinner, Form, Alert, Carousel } from 'react-bootstrap';
+import { Container, Button, Modal, Badge, Row, Col, Spinner, Form, Alert } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import API from '../API';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
-import dndLogo from '../assets/arrow-down-up.svg';
 import wrenchLogo from '../assets/wrench.svg';
 import arrowLogo from '../assets/arrow-left-circle-fill.svg'
 import saveLogo from '../assets/check-circle-fill.svg';
@@ -36,13 +35,12 @@ function My_Edit_Page(props) {
 
   const [pageContent, setPageContent] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editable_block, setEditableBlock] = useState(null);
   const [title_page, setTitle_page] = useState("");
   const [show_modal, setShow_modal] = useState(false);
   const [set_error_title, setError_title] = useState("");
   const [dirty, setDirty] = useState(false);
   const [show_empty_block_alert, setShowEmptyBlockAlert] = useState(false);
-  const [set_error_block, setError_block] = useState("");
+
   const [images, setImages] = useState([]);
   const [show_date_modal, setShowDateModal] = useState(false);
   const [pub_date, setPubDate] = useState("");
@@ -58,6 +56,7 @@ function My_Edit_Page(props) {
       .then((data) => {
         setPageContent(data)
         setTitle_page(data.page_info.title);
+        setAuthor(data.page_info.author_id);
       })
       .catch((err) => console.log(err));
   }, [dirty]);
@@ -70,28 +69,20 @@ function My_Edit_Page(props) {
   }, []);
 
   useEffect(() => {
-    if(images.length === 0){
-    API.getAllImages()
-      .then((data) => {
-        setImages(data);
-      })
-      .catch((err) => console.log(err));
+    if (images.length === 0) {
+      API.getAllImages()
+        .then((data) => {
+          setImages(data);
+        })
+        .catch((err) => console.log(err));
     }
-    if(props.user != undefined && props.user.isAdmin === 1){
+    if (props.user != undefined && props.user.isAdmin === 1) {
       API.getAllUsers().then((res) => {
         setListAuthors(res);
       })
         .catch((err) => console.log(err));
     }
   }, [show_author_modal]);
-
-  function start_editing(block_id) {
-    setEditableBlock(block_id);
-  }
-
-  function stop_editing() {
-    setEditableBlock(null);
-  }
 
   const doDeletePage = async () => {
     setShowDeleteModal(false);
@@ -207,13 +198,14 @@ function My_Edit_Page(props) {
                     <Modal.Body>
                       <Form onSubmit={handleAuthorChange}>
                         <Form.Group controlId="authorSelect">
-                          <Form.Control as="select" aria-label="Default select" onChange={(event) => setAuthor(event.target.value)}>
+                          <Form.Label>Select an Author</Form.Label>
+                          <Form.Select onChange={(event) => setAuthor(event.target.value)} value={author}>
                             {list_authors.map((user, index) => (
-                              <option key={index} value={user.user_id}>
-                                {user.id} {user.name} ({user.email})
+                              <option key={index} value={user.id}>
+                                {user.name} ({user.email})
                               </option>
                             ))}
-                          </Form.Control>
+                          </Form.Select>
                         </Form.Group>
                         <Container fluid className="d-flex justify-content-center p-4">
                           <Button variant="primary" type="submit">
@@ -299,16 +291,7 @@ function My_Edit_Page(props) {
                 </Modal>
               </h1>
             </div>
-            <>
-              {show_empty_block_alert && (
-                <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
-              )}
-              {set_error_block !== "" && (
-                <Alert variant="danger">{set_error_block}</Alert>
-              )}
-            </>
             <div className='d-flex'>
-
               <StrictModeDroppable droppableId="content">
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.droppableProps} style={{ minWidth: "100%" }}>
@@ -316,20 +299,17 @@ function My_Edit_Page(props) {
                       <Draggable key={block.block_id} draggableId={block.block_id.toString()} index={index}>
                         {(provided, snapshot) => (
                           <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className='p-2' >
-                            <ContentTypeView 
-                              block={block} 
+                            <ContentTypeView
+                              block={block}
                               isDragging={snapshot.isDragging}
-                              editable_block={editable_block}
-                              setEditableBlock={setEditableBlock}
                               pageContent={pageContent}
                               setPageContent={setPageContent}
-                              start_editing={start_editing}
-                              stop_editing={stop_editing}
-                              const page_id ={id}
+                              const page_id={id}
                               setDirty={setDirty}
                               dirty={dirty}
                               images={images}
                               setImage={setImages}
+                              show_empty_block_alert={show_empty_block_alert}
                             />
                           </div>)}
                       </Draggable>

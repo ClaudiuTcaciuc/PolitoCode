@@ -133,9 +133,9 @@ app.get("/api/users", isLoggedInAdmin, (req, res) => {
 app.put("/api/change_page_user/:id", isLoggedInAdmin, (req, res) => {
   const id = parseInt(req.params.id);
   const user_id = req.body.user_id;
+  console.log(user_id, id)
   user_dao.updatePageUser(user_id, id)
     .then( (page_id) => {
-      console.log(page_id);
       conditionalTimeout( () => res.json(page_id) );
     } )
     .catch( (err) => res.status(500).json( err ) );
