@@ -1,5 +1,5 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/suhcjUE-)
-# Exam #12345: "CMSmall"
+# Exam #1: "CMSmall"
 ## Student: s317661 TCACIUC CLAUDIU CONSTANTIN 
 
 ## React Client Application Routes
@@ -15,7 +15,9 @@
 - Route `/add_page`: add a new page
 
 ## API Server
+
 ### Autentication API
+
 - POST `/api/session`
   - request body content: `{ username: "aaa", password: "ddd" }`
   - response body content: `{ id: 123, name: "bbb", username: "ccc", isAdmin: true|false }`
@@ -25,7 +27,9 @@
 - GET `/api/session/current`
   - request body content: (empty)
   - response body content: `{ id: 123, name: "bbb", username: "ccc", isAdmin: true|false }`
+
 ### Pages API Authenticated
+
 - GET `/api/:filter`
   - request body content: credentials, filter(allpages, publicpages, progpages, draftpages)
   - response body content: `[ { id: 123, title: "page title", author_id: 321, author: "aaa", publication_date: "2023-06-22 | Draft"}, ... ]`
@@ -67,6 +71,7 @@
   - response body content: `{ message: "Author updated" }`
 
 ### Pages API Unauthenticated
+
 - GET `/api/appname`
   - request body content: (empty)
   - response body content: `{ appname: "CMSmall" }`
