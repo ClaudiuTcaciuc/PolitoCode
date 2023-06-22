@@ -87,7 +87,6 @@ async function changeAppName(name) {
       throw new Error("HTTP error, status = " + response.status);
     }
     const data = await response.text();
-    console.log(data);
     return data;
   }
   catch (err) {
@@ -194,6 +193,7 @@ async function deleteContentBlock(id) {
       throw new Error("HTTP error, status = " + response.status);
     }
     const data = await response.json();
+    console.log(data);
     return data;
   }
   catch (err) {
@@ -255,7 +255,6 @@ async function updateBlockImage(image_path, id) {
     throw err;
   }
 }
-
 
 async function cleanEmptyBlocksInPage(id) {
   try {
@@ -325,6 +324,7 @@ async function changePageUser(user_id, id) {
       throw new Error("HTTP error, status = " + response.status);
     }
     const data = await response.json();
+    console.log(data);
     return data;
   }
   catch (err) {

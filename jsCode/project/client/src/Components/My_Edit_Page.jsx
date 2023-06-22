@@ -39,6 +39,7 @@ function My_Edit_Page(props) {
   const [errorTitle, setErrorTitle] = useState("");
   const [dirty, setDirty] = useState(false);
   const [showEmptyBlockAlert, setShowEmptyBlockAlert] = useState(false);
+  const [errorBlock, setErrorBlock] = useState("");
 
   const [images, setImages] = useState([]);
   const [showDateModal, setShowDateModal] = useState(false);
@@ -140,10 +141,12 @@ function My_Edit_Page(props) {
 
   const handleDateChange = (event) => {
     event.preventDefault();
-    const today = dayjs().format("YYYY-MM-DD");
-    if (!dayjs(pubDate).isValid() || (!checked && dayjs(pubDate).isBefore(today))) {
-      setPubDateError("The date must be today or in the future");
-      return;
+    if (!checked) {
+      const today = dayjs().format("YYYY-MM-DD");
+      if (!dayjs(pubDate).isValid() || (dayjs(pubDate).isBefore(today))) {
+        setPubDateError("The date must be today or in the future");
+        return;
+      }
     }
     setPubDateError("");
     const selectedDate = checked ? "Draft" : pubDate;
@@ -292,6 +295,12 @@ function My_Edit_Page(props) {
                 </Modal>
               </h1>
             </div>
+            {showEmptyBlockAlert && (
+              <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
+            )}
+            {errorBlock !== "" && (
+              <Alert variant="danger">{errorBlock}</Alert>
+            )}
             <div className='d-flex'>
               <StrictModeDroppable droppableId="content">
                 {(provided) => (
@@ -309,7 +318,8 @@ function My_Edit_Page(props) {
                               dirty={dirty}
                               images={images}
                               setImage={setImages}
-                              showEmptyBlockAlert={showEmptyBlockAlert}
+                              setErrorBlock={setErrorBlock}
+                              setShowEmptyBlockAlert={setShowEmptyBlockAlert}
                             />
                           </div>)}
                       </Draggable>

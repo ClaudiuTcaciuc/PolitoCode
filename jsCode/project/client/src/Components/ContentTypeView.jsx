@@ -7,16 +7,16 @@ import dndLogo from '../assets/arrow-down-up.svg';
 
 function ContentTypeView(props) {
   const [editable_block, setEditableBlock] = useState(null);
-  const [set_error_block, setError_block] = useState("");
 
   const block = props.block;
   const isDragging = props.isDragging;
   const pageContent = props.pageContent;
-  const showEmptyBlockAlert = props.showEmptyBlockAlert;
   const setDirty = props.setDirty;
   const dirty = props.dirty;
   const images = props.images;
   const id = props.page_id;
+  const setErrorBlock = props.setErrorBlock;
+  const setShowEmptyBlockAlert = props.setShowEmptyBlockAlert;
 
   const dnd_style = isDragging ? "my-card-container-edit-dnd"
     : block.content === null || block.content === '' ? "my-card-container-edit-empty" : "my-card-container-edit";
@@ -109,17 +109,17 @@ function ContentTypeView(props) {
     const numParagraph = pageContent.content.filter((block) => block.block_type === 2 && block.content.trim() !== "").length;
     const numImage = pageContent.content.filter((block) => block.block_type === 3 && block.content.trim() !== "").length;
     if (numHeader <= 1 && block.type === 1) {
-      setError_block("You must have at least one header and one paragraph or image");
+      setErrorBlock("You must have at least one header and one paragraph or image");
       setTimeout(() => {
-        setError_block("");
+        setErrorBlock("");
       }, 3000);
       return;
     }
     else {
       if (numParagraph + numImage - 1 <= 0) {
-        setError_block("You must have at least one header and one paragraph or image");
+        setErrorBlock("You must have at least one header and one paragraph or image");
         setTimeout(() => {
-          setError_block("");
+          setErrorBlock("");
         }, 3000);
         return;
       }
@@ -149,6 +149,7 @@ function ContentTypeView(props) {
   const doUpdateBlock = async (block) => {
     await API.editContentBlock(block, id);
     setDirty(!dirty);
+    setShowEmptyBlockAlert("");
   };
 
   const handleDelete = (blockId) => {
@@ -181,20 +182,12 @@ function ContentTypeView(props) {
   };
 
   return (
-    <>
-      <Card key={block.block_id} className={dnd_style} onMouseDown={(e) => e.preventDefault()}>
-        <Card.Body>
-          {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
-          {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, isDragging)}
-        </Card.Body>
-      </Card>
-      {showEmptyBlockAlert && (
-        <Alert variant="danger">Non puoi salvare una pagina con blocchi vuoti.</Alert>
-      )}
-      {set_error_block !== "" && (
-        <Alert variant="danger">{set_error_block}</Alert>
-      )}
-    </>
+    <Card key={block.block_id} className={dnd_style} onMouseDown={(e) => e.preventDefault()}>
+      <Card.Body>
+        {isDragging ? <img className="my-svg-dnd" src={dndLogo} alt="dnd" /> : null}
+        {renderEditableContent(block, edit, handleDoubleClick, handleBlur, handleFocus, handleAdd, isDragging)}
+      </Card.Body>
+    </Card>
   );
 }
 

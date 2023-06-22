@@ -146,7 +146,7 @@ app.put("/api/change_page_user/:id", isLoggedInAdmin, [
   const user_id = req.body.user_id;
   user_dao.updatePageUser(user_id, id)
     .then( (page_id) => {
-      conditionalTimeout( () => res.json(page_id) );
+      conditionalTimeout( () => res.json({ message: "Author updated"}) );
     } )
     .catch( (err) => res.status(500).json( err ) );
 });
@@ -329,7 +329,7 @@ app.put('/api/edit_block/:id', isLoggedIn, [
     order_index: block.order_index
   };
   dao.updateContentBlock(updated_block)
-    .then( () => res.status(200).json({ id: updated_block.id }) )
+    .then( () => res.status(200).json({ id: updated_block.block_id }) )
     .catch( (err) => res.status(500).json(err) );
 });
 
