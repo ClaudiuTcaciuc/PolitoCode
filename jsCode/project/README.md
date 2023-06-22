@@ -29,7 +29,7 @@
 - GET `/api/:filter`
   - request body content: credentials, filter(allpages, publicpages, progpages, draftpages)
   - response body content: `[ { id: 123, title: "page title", author_id: 321, author: "aaa", publication_date: "2023-06-22 | Draft"}, ... ]`
--PUT `/api/changeappname`
+- PUT `/api/changeappname`
   - request body content: credentials, `{ application_name: "CMSmall" }`
   - response body content: `App name changed`
 - POST `/api/add_page`
@@ -41,28 +41,28 @@
 - POST `/api/add_block:id`
   - request body content: credentials, page id, `{ id: "aaa", type: 123, content:"aaabbb", order_index: 123 }`
   - response body content: `{ id: 123 }`
--PUT `/api/edit_block:id`
+- PUT `/api/edit_block:id`
   - request body content: credentials, page id, `{ id: "aaa", type: 123, content:"aaabbb", order_index: 123 }`
   - response body content: `{ id: 123 }`
--DELETE `/api/delete_block:id`
+- DELETE `/api/delete_block:id`
   - request body content: credentials, block id
   - response body content: `{ message: "Block deleted" }`
--PUT `/api/update_block_order`
+- PUT `/api/update_block_order`
   - request body content: credentials, `{ page_info: { id: 123, title: "page title", author_id: 321, author: "aaa", publication_date: "2023-06-22 | Draft"}, content: [{ block_id: 123, block_type: 123, content:"aaabbb", order_index: 123, page_id: 321 }, ...] }`
   - response body content: `{ message: "Block order updated successfully" }`
 - PUT `/api/update_image/:id`
   - request body content: credentials, block_id, `{ image_path: "aaaa.jpg" }`
   - response body content: `{ message: "Image updated" }`
--DELETE `/api/clean_page/:id`
+- DELETE `/api/clean_page/:id`
   - request body content: credentials, page id
   - response body content: `{ message: "Page cleaned" }`
--PUT `/api/update_date/:id`
+- PUT `/api/update_date/:id`
   - request body content: credentials, page id, `2023-06-22 | Draft`
   - response body content: `{ message: "Date updated" }`
--GET `/api/users`
+- GET `/api/users`
   - request body content: credentials
   - response body content: `[ { id: 123, name: "bbb", username: "ccc", isAdmin: true|false }, ... ]`
--PUT `/api/change_page_user/:id`
+- PUT `/api/change_page_user/:id`
   - request body content: credentials, user id, `{ user_id: 123 }`
   - response body content: `{ message: "Author updated" }`
 
