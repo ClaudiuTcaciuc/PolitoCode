@@ -90,7 +90,15 @@ function conditionalTimeout ( functor ){
         functor();
 }
 
-// POST: /api/sessions -> login
+function handleValidationErrors(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  next();
+}
+
+// POST: api/sessions -> login
 app.post("/api/sessions", function (req, res, next) {
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
@@ -104,14 +112,14 @@ app.post("/api/sessions", function (req, res, next) {
   })(req, res, next);
 });
 
-// DELETE: /api/sessions/current -> logout
+// DELETE: api/sessions/current -> logout
 app.delete("/api/sessions/current", isLoggedIn, (req, res) => {
   req.logout ( () => {
     res.end();
   });
 });
 
-// GET: /api/sessions/current -> get current user info
+// GET: api/sessions/current -> get current user info
 app.get("/api/sessions/current", (req, res) => {
   if (req.isAuthenticated()) {
     res.status(200).json(req.user);
@@ -121,7 +129,7 @@ app.get("/api/sessions/current", (req, res) => {
   }
 });
 
-// GET: /api/users -> get all users
+// GET: api/users -> get all users
 app.get("/api/users", isLoggedInAdmin, (req, res) => {
   user_dao.getAllUsers()
     .then( (users) => {
@@ -130,17 +138,18 @@ app.get("/api/users", isLoggedInAdmin, (req, res) => {
     .catch( (err) => res.status(500).json( err ) );
 });
 
-app.put("/api/change_page_user/:id", isLoggedInAdmin, (req, res) => {
+// PUT: api/change_page_user/:id -> change page author
+app.put("/api/change_page_user/:id", isLoggedInAdmin, [
+  check('id').isInt().withMessage("Page id must be an integer"),
+], handleValidationErrors ,(req, res) => {
   const id = parseInt(req.params.id);
   const user_id = req.body.user_id;
-  console.log(user_id, id)
   user_dao.updatePageUser(user_id, id)
     .then( (page_id) => {
       conditionalTimeout( () => res.json(page_id) );
     } )
     .catch( (err) => res.status(500).json( err ) );
 });
-
 
 // GET: api/publicpages -> get all public pages to show in home page
 app.get("/api/publicpages", (req, res) => {
@@ -161,7 +170,9 @@ app.get("/api/allpages", isLoggedIn, (req, res) => {
 });
 
 // GET: api/page/:id -> get page content by id
-app.get("/api/page/:id", async (req, res) => {
+app.get("/api/page/:id", [
+  check('id').isInt().withMessage("Page id must be an integer")
+], handleValidationErrors, async (req, res) => {
   try{
     const id = parseInt(req.params.id);
     if( isNaN(id) ){
@@ -170,20 +181,19 @@ app.get("/api/page/:id", async (req, res) => {
     }
     const blocks = await dao.getPageContent(id);
     const page = await dao.getPageByID(blocks[0].page_id);
-
     const result = {  
       page_info: page,
       content: blocks
     };
     conditionalTimeout( () => res.json(result) );
   }
-  catch (err){
-    res.status(500).json(err);
-  }
+  catch (err){ res.status(500).json(err);}
 });
 
 // PUT: api/changeappname -> change app name
-app.put("/api/changeappname", isLoggedInAdmin, (req, res) => {
+app.put("/api/changeappname", isLoggedInAdmin, [
+  check('application_name').isLength({ min: 1 }).withMessage("Application name is required")
+], handleValidationErrors, (req, res) => {
   const updateData = req.body;
   fs.writeFile('./appname.json', JSON.stringify(updateData), (err) => {
     if (err){
@@ -192,7 +202,6 @@ app.put("/api/changeappname", isLoggedInAdmin, (req, res) => {
     }
     res.status(200).send("App name changed");
   });
-
 });
 
 // GET: api/appname -> get app name
@@ -236,12 +245,7 @@ app.post("/api/add_page", isLoggedIn, [
     }
     return true;
   }),
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array() });
-    return;
-  }
+], handleValidationErrors, async (req, res) => {
   const request_body = req.body;
   const page = {
     title: request_body.title,
@@ -249,14 +253,12 @@ app.post("/api/add_page", isLoggedIn, [
     creation_date: request_body.creation_date,
     publication_date: dayjs(request_body.publication_date).isValid() ? dayjs(request_body.publication_date).format("YYYY-MM-DD") : "Draft",
   }
-
   try {
     const page_id = await dao.insertPage(page);
     if (page_id === -1) {
       res.status(500).json( { error: "Internal server error" } );
       return;
     }
-    
     for (const block of request_body.blocks) {
       const new_block = {
         page_id: page_id,
@@ -264,7 +266,6 @@ app.post("/api/add_page", isLoggedIn, [
         content: block.content,
         order_index: block.order_index + 1
       };
-      
       try {
         await dao.insertContentBlock(new_block);
       } catch (err) {
@@ -281,13 +282,11 @@ app.post("/api/add_page", isLoggedIn, [
 
 // POST: api/add_block/:id -> ad an empty block to a page
 app.post("/api/add_block/:id",[
-  // make controls
-], isLoggedIn, async (req, res) => {
+  check("id").isInt().withMessage("Invalid page id"),
+  check("block_type").isInt().withMessage("Invalid block type"),
+  check("order_index").isInt().withMessage("Invalid order index")
+], handleValidationErrors, isLoggedIn, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
@@ -299,10 +298,8 @@ app.post("/api/add_block/:id",[
     content: req.body.content,
     order_index: req.body.order_index
   };
-  console.log("block: ", block);
   dao.insertContentBlock(block)
     .then( (block_id_inserted) => {
-      console.log("block_id_inserted: ", block_id_inserted);
       dao.scaleUpContentBlock(req.params.id, block.order_index, block_id_inserted)
         .then( () => res.status(200).json({ id: block_id_inserted }) )
         .catch( (err) => res.status(501).json(err) );
@@ -311,23 +308,19 @@ app.post("/api/add_block/:id",[
 });
 
 // PUT: api/edit/:id -> update a block by id
-app.put('/api/edit_block/:id', isLoggedIn, async (req, res) => {
+app.put('/api/edit_block/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid block id"),
+  check("content").isLength({ min: 1 }).withMessage("Content is required"),
+], handleValidationErrors, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
-
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
   if(page.author_id !== req.user.id && !req.user.isAdmin)
     return res.status(401).json({ error: 'Unauthorized user' });
-  
   const block = await dao.getContentBlock(req.body.block_id);
   if(block.err)
     return res.status(404).json(block);
-  
   const updated_block = {
     block_id: block.block_id,
     page_id: block.page_id,
@@ -335,40 +328,37 @@ app.put('/api/edit_block/:id', isLoggedIn, async (req, res) => {
     content: req.body.content,
     order_index: block.order_index
   };
-
   dao.updateContentBlock(updated_block)
     .then( () => res.status(200).json({ id: updated_block.id }) )
     .catch( (err) => res.status(500).json(err) );
 });
 
 // PUT api/update_block_order/ -> update the order of the blocks
-app.put('/api/update_block_order/', isLoggedIn, async (req, res) => {
-  console.log("req.body: ", req.body);
+app.put('/api/update_block_order/', isLoggedIn, [
+  check("page_info.id").isInt().withMessage("Invalid page id"),
+  check("content").isArray().withMessage("Content must be an array")
+], handleValidationErrors, async (req, res) => {
   const page = await dao.getPageByID(req.body.page_info.id);
   if (page.err)
     return res.status(404).json(page);
   if (page.author_id !== req.user.id && !req.user.isAdmin)
     return res.status(401).json({ error: 'Unauthorized user' });
   const blocks = req.body.content;
-
   const updatePromises = blocks.map((block) => {
     const new_order_index = block.order_index;
     const block_id = block.block_id;
     return dao.changeIndexOrder(block_id, new_order_index);
   });
-  
   Promise.all(updatePromises)
     .then(() => res.status(200).json({ message: 'Block order updated successfully' }))
     .catch((err) => res.status(500).json(err));
 });
 
 // DELETE: api/delete_block/:id -> the id is the id of the block
-app.delete('/api/delete_block/:id', isLoggedIn, async (req, res) => {
+app.delete('/api/delete_block/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid block id")
+], handleValidationErrors, async (req, res) => {
   const id = parseInt (req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
   const block = await dao.getContentBlock(id);
   if(block.err)
     return res.status(404).json(block);
@@ -387,12 +377,10 @@ app.delete('/api/delete_block/:id', isLoggedIn, async (req, res) => {
 });
 
 // DELETE: api/page/:id -> delete a page by id and the related content
-app.delete('/api/delete_page/:id', isLoggedIn, async (req, res) => {
+app.delete('/api/delete_page/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid page id")
+], handleValidationErrors, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
@@ -419,12 +407,10 @@ app.get('/api/images', async (req, res) => {
 });
 
 // POST: api/update_image/:id -> upload an image
-app.put('/api/update_image/:id', isLoggedIn, async (req, res) => {
+app.put('/api/update_image/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid image id")
+], handleValidationErrors, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Block not found' });
-      return;
-  }
   const block = await dao.getContentBlock(id);
   if(block.err)
     return res.status(404).json(block);
@@ -440,12 +426,10 @@ app.put('/api/update_image/:id', isLoggedIn, async (req, res) => {
 });
 
 // DELETE: api/clean_page/:id -> clean a page by id (remove empty blocks)
-app.delete('/api/clean_page/:id', isLoggedIn, async (req, res) => {
+app.delete('/api/clean_page/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid page id")
+], handleValidationErrors, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
@@ -457,12 +441,10 @@ app.delete('/api/clean_page/:id', isLoggedIn, async (req, res) => {
 });
 
 // PUT: api/update_date/:id -> update a pub date of a page
-app.put('/api/update_date/:id', isLoggedIn, async (req, res) => {
+app.put('/api/update_date/:id', isLoggedIn, [
+  check("id").isInt().withMessage("Invalid page id")
+], handleValidationErrors, async (req, res) => {
   const id = parseInt(req.params.id);
-  if( isNaN(id) ){
-      res.status(400).json({ error: 'Page not found' });
-      return;
-  }
   const page = await dao.getPageByID(id);
   if(page.err)
     return res.status(404).json(page);
@@ -474,7 +456,6 @@ app.put('/api/update_date/:id', isLoggedIn, async (req, res) => {
     .then( () => res.status(200).json({ message: 'Date updated' }))
     .catch( (err) => res.status(500).json(err));
 });
-
 
 // activate the server
 app.listen(port, () => {

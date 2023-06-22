@@ -25,7 +25,6 @@ const StrictModeDroppable = ({ children, droppableId }) => {
   if (!enabled) {
     return null;
   }
-
   return <Droppable droppableId={droppableId}>{children}</Droppable>;
 };
 
@@ -35,30 +34,30 @@ function My_Edit_Page(props) {
 
   const [pageContent, setPageContent] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [title_page, setTitle_page] = useState("");
-  const [show_modal, setShow_modal] = useState(false);
-  const [set_error_title, setError_title] = useState("");
+  const [titlePage, setTitlePage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [errorTitle, setErrorTitle] = useState("");
   const [dirty, setDirty] = useState(false);
-  const [show_empty_block_alert, setShowEmptyBlockAlert] = useState(false);
+  const [showEmptyBlockAlert, setShowEmptyBlockAlert] = useState(false);
 
   const [images, setImages] = useState([]);
-  const [show_date_modal, setShowDateModal] = useState(false);
-  const [pub_date, setPubDate] = useState("");
-  const [set_pub_date_error, setPubDateError] = useState("");
-  const [show_author_modal, setShowAuthorModal] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [pubDate, setPubDate] = useState("");
+  const [pubDateError, setPubDateError] = useState("");
+  const [showAuthorModal, setShowAuthorModal] = useState(false);
   const [checked, setChecked] = useState(false);
 
-  const [list_authors, setListAuthors] = useState([]);
+  const [listAuthors, setListAuthors] = useState([]);
   const [author, setAuthor] = useState("");
 
   useEffect(() => {
     API.getPageContent(id)
       .then((data) => {
         setPageContent(data)
-        setTitle_page(data.page_info.title);
+        setTitlePage(data.page_info.title);
         setAuthor(data.page_info.author_id);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => navigate('/'));
   }, [dirty]);
 
   // useEffect to clean empty blocks when the page is closed or redirected
@@ -73,16 +72,14 @@ function My_Edit_Page(props) {
       API.getAllImages()
         .then((data) => {
           setImages(data);
-        })
-        .catch((err) => console.log(err));
+        }).catch((err) => console.log(err));
     }
     if (props.user != undefined && props.user.isAdmin === 1) {
       API.getAllUsers().then((res) => {
         setListAuthors(res);
-      })
-        .catch((err) => console.log(err));
+      }).catch((err) => console.log(err));
     }
-  }, [show_author_modal]);
+  }, [showAuthorModal]);
 
   const doDeletePage = async () => {
     setShowDeleteModal(false);
@@ -103,24 +100,24 @@ function My_Edit_Page(props) {
 
   const handleTitleChange = (event) => {
     event.preventDefault();
-    if (title_page.trim() === "") {
-      setError_title("Title can not be empty");
+    if (titlePage.trim() === "") {
+      setErrorTitle("Title can not be empty");
       return;
     }
     setPageContent((prev) => ({
       ...prev,
       page_info: {
         ...prev.page_info,
-        title: title_page,
+        title: titlePage,
       },
     }));
-    setError_title("");
-    setShow_modal(false);
+    setErrorTitle("");
+    setShowModal(false);
   };
 
   if (pageContent.length === 0 || pageContent.content === undefined || props.user === null) {
     return (
-      <div>
+      <div className='d-flex justify-content-center align-items-center' style={{ height: '50vh' }}>
         <Spinner animation="border" role="status" /> Loading
       </div>
     );
@@ -144,20 +141,20 @@ function My_Edit_Page(props) {
   const handleDateChange = (event) => {
     event.preventDefault();
     const today = dayjs().format("YYYY-MM-DD");
-    if (!dayjs(pub_date).isValid() || (checked && dayjs(pub_date).isBefore(today))) {
+    if (!dayjs(pubDate).isValid() || (!checked && dayjs(pubDate).isBefore(today))) {
       setPubDateError("The date must be today or in the future");
       return;
     }
     setPubDateError("");
-    if (checked)
-      setPubDate("Draft");
-    doDateUpdate(pub_date);
+    const selectedDate = checked ? "Draft" : pubDate;
+    doDateUpdate(selectedDate);
   };
 
   const doDateUpdate = async (new_date) => {
     await API.updateDatePage(new_date, id);
     setShowDateModal(false);
     setDirty(!dirty);
+    setChecked(false);
   };
 
   const handleModalOnHide = () => {
@@ -172,7 +169,6 @@ function My_Edit_Page(props) {
   const handleAuthorChange = (event) => {
     event.preventDefault();
     const author_id = author.split(" ")[0];
-    console.log(author_id);
     API.changePageUser(author_id, id);
     setShowAuthorModal(false);
     setDirty(!dirty);
@@ -191,16 +187,16 @@ function My_Edit_Page(props) {
                     <Button className='my-btn-mod' size='sm' onClick={() => handleModalGetAuthor()}>
                       <img src={wrenchLogo} alt="logo" />{" "}
                     </Button> : null}
-                  <Modal show={show_author_modal} onHide={() => setShowAuthorModal(false)} centered>
+                  <Modal show={showAuthorModal} onHide={() => setShowAuthorModal(false)} centered>
                     <Modal.Header closeButton>
                       <Modal.Title>Change the Author of the Page</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                      <Form onSubmit={handleAuthorChange}>
+                      <Form onSubmit={handleAuthorChange} name="change-author">
                         <Form.Group controlId="authorSelect">
                           <Form.Label>Select an Author</Form.Label>
                           <Form.Select onChange={(event) => setAuthor(event.target.value)} value={author}>
-                            {list_authors.map((user, index) => (
+                            {listAuthors.map((user, index) => (
                               <option key={index} value={user.id}>
                                 {user.name} ({user.email})
                               </option>
@@ -217,22 +213,26 @@ function My_Edit_Page(props) {
                   </Modal>
                 </Container>
                 <Container fluid>
-                  <Badge className="my-badge">Data</Badge> {pageContent.page_info.publication_date} {" "}
-                  <Button className='my-btn-mod' size='sm' onClick={() => setShowDateModal(!show_date_modal)}>
+                  <Badge className="my-badge">Data</Badge> {
+                    dayjs(pageContent.page_info.publication_date).isValid() ?
+                      dayjs(pageContent.page_info.publication_date).isAfter(dayjs()) ? "Scheduled" : "Released" : ""
+                  }{" "}
+                  {pageContent.page_info.publication_date}
+                  <Button className='my-btn-mod' size='sm' onClick={() => setShowDateModal(!showDateModal)}>
                     <img src={wrenchLogo} alt="logo" />{" "}
                   </Button>
-                  <Modal show={show_date_modal} onHide={() => handleModalOnHide()} centered>
+                  <Modal show={showDateModal} onHide={() => handleModalOnHide()} centered>
                     <Modal.Header closeButton>
                       <Modal.Title>Change the Date of the Page</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                       <Form onSubmit={handleDateChange}>
-                        {set_pub_date_error !== "" ? <Alert variant="danger">{set_pub_date_error}</Alert> : null}
+                        {pubDateError !== "" ? <Alert variant="danger">{pubDateError}</Alert> : null}
                         <Form.Group>
                           <Row>
                             <Col sm={6}>
                               <Form.Label>Page Date</Form.Label>
-                              <Form.Control type="date" title="date" name="date" disabled={!checked} onChange={(e) => setPubDate(e.target.value)} />
+                              <Form.Control type="date" title="date" name="date" disabled={checked} onChange={(e) => setPubDate(e.target.value)} />
                             </Col>
                             <Col sm={6}>
                               <Form.Label>Set To Draft</Form.Label>
@@ -258,10 +258,10 @@ function My_Edit_Page(props) {
             <div className="my-page-title">
               <h1>
                 {pageContent.page_info.title}
-                <Button variant='secondary' className="my-edit-title" onClick={() => setShow_modal(!show_modal)}>
+                <Button variant='secondary' className="my-edit-title" onClick={() => setShowModal(!showModal)}>
                   <img src={wrenchLogo} alt="logo" />{" "}
                 </Button>
-                <Modal show={show_modal} onHide={() => setShow_modal(!show_modal)}>
+                <Modal show={showModal} onHide={() => setShowModal(!showModal)}>
                   <Modal.Header closeButton>
                     <Modal.Title>Change the Title of the Page</Modal.Title>
                   </Modal.Header>
@@ -270,16 +270,17 @@ function My_Edit_Page(props) {
                       <Form.Group>
                         <Form.Label>Page Title</Form.Label>
                         <Form.Control
+                          na="title"
                           type="text"
                           title="title"
-                          value={title_page}
+                          value={titlePage}
                           placeholder="Enter the new title of the page"
-                          onChange={(event) => setTitle_page(event.target.value)}
+                          onChange={(event) => setTitlePage(event.target.value)}
                         />
                       </Form.Group>
-                      <p className="text-danger">{set_error_title}</p>
+                      <p className="text-danger">{errorTitle}</p>
                       <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShow_modal(!show_modal)}>
+                        <Button variant="secondary" onClick={() => setShowModal(!showModal)}>
                           Cancel
                         </Button>
                         <Button variant="primary" type="submit">
@@ -303,13 +304,12 @@ function My_Edit_Page(props) {
                               block={block}
                               isDragging={snapshot.isDragging}
                               pageContent={pageContent}
-                              setPageContent={setPageContent}
                               const page_id={id}
                               setDirty={setDirty}
                               dirty={dirty}
                               images={images}
                               setImage={setImages}
-                              show_empty_block_alert={show_empty_block_alert}
+                              showEmptyBlockAlert={showEmptyBlockAlert}
                             />
                           </div>)}
                       </Draggable>

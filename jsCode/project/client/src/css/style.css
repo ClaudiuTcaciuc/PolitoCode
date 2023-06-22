@@ -42,7 +42,7 @@
 }
 
 .button-wrapper {
-    margin-bottom: 10px; 
+    margin-bottom: 10px;
 }
 
 .fixed-bottom-right .btn {
@@ -80,6 +80,17 @@
 
 .my-btn {
     background-color: rgb(146, 63, 146);
+    border-color: rgb(254, 254, 254);
+}
+
+.my-btn-add-delete {
+    color: white;
+    position: relative;
+    top: 44px;
+    border-radius: 40%;
+    border: none;
+    cursor: pointer;
+    background-color: #797474;
     border-color: rgb(254, 254, 254);
 }
 
@@ -121,7 +132,7 @@
 .author-info-container {
     flex: 0 0 69%;
     padding: 10px;
-    
+
 }
 
 .my-page-title {
@@ -149,7 +160,6 @@
 .my-badge {
     background-color: rgb(90, 12, 90) !important;
     color: white;
-    
 }
 
 .my-card-container-edit {
@@ -159,7 +169,7 @@
     min-height: 100px;
 }
 
-.my-card-container-edit-empty{
+.my-card-container-edit-empty {
     border: 0.1rem solid #ccc;
     padding: 0.6rem;
     min-width: 200px;
@@ -170,7 +180,7 @@
 .my-card-container-edit .card-title {
     font-size: 1.25rem;
     font-weight: bold;
-    
+
 }
 
 .my-card-container-edit .card-text {
@@ -283,7 +293,7 @@
     min-width: 200px;
     min-height: 50px;
     max-width: 100%;
-    cursor: default!important;
+    cursor: default !important;
 }
 
 .hover-button-del {
@@ -321,7 +331,7 @@
 .my-header-new {
     font-size: 20px;
 }
-  
+
 .my-paragraph-new {
     font-size: 16px;
 }
@@ -347,6 +357,7 @@
     color: gray;
     font-size: 12px;
 }
+
 .image-thumbnail {
     width: 100%;
     height: auto;
@@ -360,10 +371,10 @@
 }
 
 .image-carousel {
-    background-color: #971d1d!important;
+    background-color: #971d1d !important;
 }
 
-.my-btn-mod{
-    background-color: #f8f9fa!important;
+.my-btn-mod {
+    background-color: #f8f9fa !important;
     border: none;
 }

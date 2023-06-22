@@ -21,10 +21,8 @@ function My_Page(props) {
   useEffect(() => {
     API.getPageContent(id)
       .then(data => setPageContent(data)
-        // soluzione alternativa per non fare una useEffect aggiuntiva quando edito
-        // localStorage.setItem('page', JSON.stringify(data))
       )
-      .catch(err => console.log(err));
+      .catch(err => (navigate('/')));
   }, []);
 
   const doDeletePage = async () => {

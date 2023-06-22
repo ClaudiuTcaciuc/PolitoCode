@@ -89,6 +89,7 @@ exports.getAllUsers = () => {
     });
 };
 
+// update the author of a page
 exports.updatePageUser = (user_id, page_id) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE Pages SET author_id = ? WHERE page_id = ?";

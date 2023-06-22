@@ -29,5 +29,5 @@ function My_Footer(props) {
       </div>
     </Container>
   );
-  }
+}
 export default My_Footer;

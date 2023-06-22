@@ -7,8 +7,8 @@ import dayjs from 'dayjs';
 import '../css/style.css';
 import deleteLogo from '../assets/trash-fill.svg';
 import arrowLogo from '../assets/arrow-left-circle-fill.svg'
-import saveLogo from '../assets/check-circle-fill.svg';
 
+// function to handle the drag and drop
 const StrictModeDroppable = ({ children, droppableId }) => {
   const [enabled, setEnabled] = useState(false);
 
@@ -49,8 +49,9 @@ function My_Add_Page(props) {
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
 
+  // check if the user is logged in
   if (!props.loggedIn) return (
-    <div className='d-flex justify-content-center'>
+    <div className='d-flex justify-content-center align-items-center' style={{ height: '50vh' }}>
       <Spinner animation="border" role="status" /> Loading
     </div>
   );
@@ -104,6 +105,7 @@ function My_Add_Page(props) {
     setFormBlocks((prevBlocks) => prevBlocks.filter((_, i) => i !== index));
     setFormBlocks((prevBlocks) => prevBlocks.map((block, i) => ({ ...block, order_index: i })));
   };
+
   const renderFormBlocks = () => {
     return formBlocks.map((block, index) => (
       <Draggable key={block.id} draggableId={block.id.toString()} index={index}>
@@ -114,37 +116,41 @@ function My_Add_Page(props) {
             {...provided.dragHandleProps}
           >
             <Form.Group className={getBlockClassName(block.type)}>
-              <Form.Label >{block.type === 1 ? "Header" : block.type === 2 ? "Paragraph" : "Image"}</Form.Label>
-              {block.type === 1 && (
-                <Form.Control id={block.id} name="content" type="text" placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
-              )}
-              {block.type === 2 && (
-                <Form.Control id={block.id} name="content" as="textarea" rows={3} placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
-              )}
-              {block.type === 3 && (
-                <>
-                  <Container className='image-show'>
-                    <img src={"http://localhost:3000/" + block.content} className="image-thumbnail" onClick={() => setShowImageModalUpdate(true)} />
-                  </Container>
-                  <Modal show={showImageModalUpdate} onHide={() => setShowImageModalUpdate(false)} centered>
-                    <Modal.Header >
-                      <Modal.Title>Select Image</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <Carousel >
-                        {images.map((image, index) => (
-                          <Carousel.Item key={index} onClick={() => handleUpdateFormBlockImage(image, block.id)}>
-                            <img src={"http://localhost:3000/" + image.image_path} className="image-thumbnail" />
-                          </Carousel.Item>
-                        ))}
-                      </Carousel>
-                    </Modal.Body>
-                  </Modal>
-                </>
-              )}
-              <Button className="my-btn" variant="secondary" onClick={handleRemoveFormBlock(index)}>
-                <img src={deleteLogo} alt="delete" className='my-svg' />
-              </Button>
+              <div className="d-flex align-items-start">
+                <div className="flex-grow-1">
+                  <Form.Label >{block.type === 1 ? "Header" : block.type === 2 ? "Paragraph" : "Image"}</Form.Label>
+                  {block.type === 1 && (
+                    <Form.Control id={block.id} name="content" type="text" placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
+                  )}
+                  {block.type === 2 && (
+                    <Form.Control id={block.id} name="content" as="textarea" rows={3} placeholder="Add new content here" onChange={(event) => handleUpdateFormBlock(index, event.target.value)} />
+                  )}
+                  {block.type === 3 && (
+                    <>
+                      <Container className='image-show'>
+                        <img src={"http://localhost:3000/" + block.content} className="image-thumbnail" onClick={() => setShowImageModalUpdate(true)} />
+                      </Container>
+                      <Modal show={showImageModalUpdate} onHide={() => setShowImageModalUpdate(false)} centered>
+                        <Modal.Header >
+                          <Modal.Title>Select Image</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                          <Carousel >
+                            {images.map((image, index) => (
+                              <Carousel.Item key={index} onClick={() => handleUpdateFormBlockImage(image, block.id)}>
+                                <img src={"http://localhost:3000/" + image.image_path} className="image-thumbnail" />
+                              </Carousel.Item>
+                            ))}
+                          </Carousel>
+                        </Modal.Body>
+                      </Modal>
+                    </>
+                  )}
+                </div>
+                <Button className="my-btn-add-delete" variant="secondary" onClick={handleRemoveFormBlock(index)}>
+                  <img src={deleteLogo} alt="delete" className='my-svg' />
+                </Button>
+              </div>
             </Form.Group>
           </div>
         )}
@@ -325,24 +331,11 @@ function My_Add_Page(props) {
                 <Form.Label className="text-right">
                   Pubblication Date
                 </Form.Label>
-                <Form.Control
-                  id="pubdate"
-                  name="pubdate"
-                  placeholder={publication_date}
-                  type="date"
-                  disabled={!checked}
-                  onChange={(event) => setPublication_date(event.target.value)}
-                  required
-                />
+                <Form.Control id="pubdate" name="pubdate" placeholder={publication_date} type="date" disabled={!checked} onChange={(event) => setPublication_date(event.target.value)} required />
               </Col>
               <Col sm={6}>
                 <Form.Label>Publish</Form.Label>
-                <Form.Check
-                  id="checkdate"
-                  name="checkdate"
-                  type="checkbox"
-                  onChange={() => setChecked(!checked)}
-                />
+                <Form.Check id="checkdate" name="checkdate" type="checkbox" onChange={() => setChecked(!checked)} />
               </Col>
             </Form.Group>
             <DragDropContext onDragEnd={handleDragEnd}>

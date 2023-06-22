@@ -1,8 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import react / bootstrap libraries
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-// import components
 import My_Header from './Components/My_Header'
 import My_Login from './Components/My_Login'
 import My_Footer from './Components/My_Footer'
@@ -15,8 +13,9 @@ import API from './API';
 function App() {
   const [user, setUser] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [app_name, setApp_name] = useState('');
-  
+  const [app_name, setApp_name] = useState('Content Manager App');
+
+  // useEffect to check if the user is logged in
   useEffect(() => {
     API.getUserInfo().then((user) => {
       setUser(user);
@@ -26,12 +25,14 @@ function App() {
     });
   }, []);
 
+  // useEffect to get the app name
   useEffect(() => {
     API.getAppName()
       .then((name) => { setApp_name(name) })
       .catch((err) => { console.log(err) });
   }, [app_name]);
 
+  // function to handle the login
   const loginSuccessful = (user) => {
     setUser(user);
     setLoggedIn(true);

@@ -79,6 +79,7 @@ exports.getPageByID = (id) => {
     });
 };
 
+// get the content of the page by id
 exports.getPageContent = (pageId) => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT ContentBlocks.*, Pages.title FROM ContentBlocks, Pages WHERE ContentBlocks.page_id = ? AND Pages.page_id = ContentBlocks.page_id ORDER BY ContentBlocks.order_index ASC";
@@ -103,6 +104,7 @@ exports.getPageContent = (pageId) => {
     });
 };
 
+// insert a new page
 exports.insertPage = (page) => {
     return new Promise((resolve, reject) => {
         const sql = "INSERT INTO Pages(title, author_id, creation_date, publication_date) VALUES(?, ?, ?, ?)";
@@ -116,6 +118,7 @@ exports.insertPage = (page) => {
     });
 };
 
+// insert a new content block
 exports.insertContentBlock = (block) => {
     return new Promise((resolve, reject) => {
         const sql = "INSERT INTO ContentBlocks (page_id, block_type, content, order_index) VALUES (?, ?, ?, ?)";
@@ -129,6 +132,7 @@ exports.insertContentBlock = (block) => {
     });
 };
 
+// scale up the order index of the content blocks
 exports.scaleUpContentBlock = (page_id, order_index, block_id) => {
     return new Promise ((resolve, reject) => {
         const sql = "UPDATE ContentBlocks SET order_index = order_index + 1 WHERE page_id = ? AND order_index >= ? AND block_id != ?";
@@ -142,7 +146,7 @@ exports.scaleUpContentBlock = (page_id, order_index, block_id) => {
     })
 };
 
-
+// update the page
 exports.updatePage = (page) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE Pages SET title = ?, author_id = ?, publication_date = ? WHERE page_id = ?";
@@ -156,6 +160,7 @@ exports.updatePage = (page) => {
     });
 };
 
+// update the content block
 exports.updateContentBlock = (block) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE ContentBlocks SET block_type = ?, content = ?, order_index = ? WHERE block_id = ?";
@@ -169,6 +174,7 @@ exports.updateContentBlock = (block) => {
     });
 };
 
+// get the content block by id
 exports.getContentBlock = (blockId) => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT * FROM ContentBlocks WHERE block_id = ?";
@@ -182,6 +188,7 @@ exports.getContentBlock = (blockId) => {
     });
 };
 
+// insert a new content block
 exports.insertContentBlock = (block) => {
     return new Promise((resolve, reject) => {
         const sql = "INSERT INTO ContentBlocks (page_id, block_type, content, order_index) VALUES (?, ?, ?, ?)";
@@ -195,6 +202,7 @@ exports.insertContentBlock = (block) => {
     });
 };
 
+// rescale the order index of the content blocks
 exports.rescaleOrderIndex = (page_id, order_index) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE ContentBlocks SET order_index = order_index - 1 WHERE page_id = ? AND order_index >= ?";
@@ -208,6 +216,7 @@ exports.rescaleOrderIndex = (page_id, order_index) => {
     });
 };
 
+// change the order index of the content blocks
 exports.changeIndexOrder = (block_id, order_index) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE ContentBlocks SET order_index = ? WHERE block_id = ?";
@@ -221,6 +230,7 @@ exports.changeIndexOrder = (block_id, order_index) => {
     });
 };
 
+// delete the content block
 exports.deleteContentBlock = (block_id) => {
     return new Promise((resolve, reject) => {
         const sql = "DELETE FROM ContentBlocks WHERE block_id = ?";
@@ -234,6 +244,7 @@ exports.deleteContentBlock = (block_id) => {
     });
 };
 
+// delete the page
 exports.deletePage = (pageId) => {
     return new Promise((resolve, reject) => {
         const sql = "DELETE FROM Pages WHERE page_id = ?";
@@ -247,6 +258,7 @@ exports.deletePage = (pageId) => {
     });
 };
 
+// get all the images
 exports.getAllImages = () => {
     return new Promise((resolve, reject) => {
         const sql = "SELECT * FROM Images";
@@ -268,6 +280,7 @@ exports.getAllImages = () => {
     });
 };
 
+// get the image by id
 exports.updateBlockImage = (block_id, image_path) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE ContentBlocks SET content = ? WHERE block_id = ?";
@@ -281,6 +294,7 @@ exports.updateBlockImage = (block_id, image_path) => {
     });
 };
 
+// delete empty block on save
 exports.cleanPage = (page_id) => {
     return new Promise((resolve, reject) => {
         const sql = "DELETE FROM ContentBlocks WHERE content = '' AND page_id = ?";
@@ -294,6 +308,7 @@ exports.cleanPage = (page_id) => {
     });
 };
 
+// update the publication date
 exports.updatePubDate = (page_id, pub_date) => {
     return new Promise((resolve, reject) => {
         const sql = "UPDATE Pages SET publication_date = ? WHERE page_id = ?";
@@ -306,4 +321,3 @@ exports.updatePubDate = (page_id, pub_date) => {
         });
     });
 };
-
