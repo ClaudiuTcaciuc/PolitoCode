@@ -40,7 +40,32 @@ def plot_histogram(data_train, label):
         plt.legend()
     plt.tight_layout()
     plt.show()
+
+def pca_solver(data, m):
+    mu = np.mean(data, axis=0)
+    data_centered = data - mu
+    cov = np.cov(data_centered.T)
     
+    eigenvalues, eigenvectors = np.linalg.eig(cov)
+    sorted_index = np.argsort(eigenvalues)[::-1]
+    sorted_eigenvectors = eigenvectors[:, sorted_index]
+    selected_eigenvectors = sorted_eigenvectors[:, :m]
+    
+    new_data = data_centered.dot(selected_eigenvectors)
+    
+    # plot thge PCA - explained variance
+    total_eigenvalues = np.sum(eigenvalues)
+    var_exp = [(i / total_eigenvalues) for i in sorted(eigenvalues, reverse=True)]
+    cum_sum_exp = np.cumsum(var_exp)
+    # not necessary but useful to see the explained variance
+    plt.bar(range(0, len(var_exp)), var_exp, alpha=0.5, align='center', label='individual explained variance')
+    plt.step(range(0, len(cum_sum_exp)), cum_sum_exp, where='mid', label='cumulative explained variance')
+    plt.ylabel('Explained variance ratio')
+    plt.xlabel('Principal components')
+    plt.legend(loc='best')
+    plt.tight_layout()
+    plt.show()
+
 
 def lda_solver (data, label, m = 1): # we are in a binary case so m = n_classes -1 -> m = 1
     mu_class = np.array([np.mean(data[label == i], axis=0) for i in np.unique(label)])
@@ -82,6 +107,7 @@ def plot_corr(data, color , title):
 if __name__ == "__main__":
     data_train, label = load_train_data()
     # data plot for training set
-    plot_histogram(data_train, label)
-    lda_solver(data_train, label)
-    correlation_matrix(data_train, label)
+    # plot_histogram(data_train, label)
+    # lda_solver(data_train, label)
+    # correlation_matrix(data_train, label)
+    pca_solver(data_train, 11)
