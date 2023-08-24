@@ -6,26 +6,13 @@ def load_train_data():
     data_label = np.loadtxt("Train.txt", delimiter=",", usecols=12, dtype=int)
     return data_matrix, data_label
 
-def data_plot(data_train, label):
+def plot_scatter(data_train, label):
     # Separate the data into two groups based on the label
     data_male = data_train[label == 0]
     data_female = data_train[label == 1]
-
-    # Create histograms for each feature
-    num_features = data_train.shape[1]
-    plt.figure(figsize=(12, 8))
-
-    for i in range(num_features):
-        plt.subplot(3, 4, i + 1)  # Adjust the layout as needed
-        plt.hist(data_male[:, i], bins=20, alpha=0.5, label='Male', color='blue', density=True, edgecolor='black')
-        plt.hist(data_female[:, i], bins=20, alpha=0.5, label='Female', color='red', density=True, edgecolor='black')
-        plt.title(f'Feature {i+1}')
-        plt.legend()
-
-    plt.tight_layout()
-    plt.show()
     
     # Create scatter plots for each pair of features
+    num_features = data_train.shape[1]
     plt.figure(figsize=(16, 10))
     
     for i in range(num_features - 1):
@@ -36,6 +23,25 @@ def data_plot(data_train, label):
     plt.tight_layout()
     plt.show()
     
+def plot_histogram(data_train, label):
+    # Separate the data into two groups based on the label
+    data_male = data_train[label == 0]
+    data_female = data_train[label == 1]
+    
+    # Create histograms for each feature
+    num_features = data_train.shape[1]
+    plt.figure(figsize=(12, 8))
+
+    for i in range(num_features):
+        plt.subplot(num_features//5+1, num_features//4+1, i + 1)
+        plt.hist(data_male[:, i], bins=50, alpha=0.5, label='Male', color='blue', density=True, edgecolor='black')
+        plt.hist(data_female[:, i], bins=50, alpha=0.5, label='Female', color='red', density=True, edgecolor='black')
+        plt.title(f'Feature {i+1}')
+        plt.legend()
+    plt.tight_layout()
+    plt.show()
+    
+
 def lda_solver (data, label, m = 1): # we are in a binary case so m = n_classes -1 -> m = 1
     mu_class = np.array([np.mean(data[label == i], axis=0) for i in np.unique(label)])
     mu_global = np.mean(data, axis=0)
@@ -48,15 +54,34 @@ def lda_solver (data, label, m = 1): # we are in a binary case so m = n_classes 
     selected_eigenvectors = sorted_eigenvectors[:, :m]
     
     new_data = data.dot(selected_eigenvectors)
-
-    # plot the LDA solution
-    data_plot(new_data, label)
+    new_data = np.real(new_data)
     
+    # plot the LDA solution
+    plot_histogram(new_data, label)
+
+def correlation_matrix (data, label):
+    pearson_corr = np.corrcoef(data, rowvar=False)
+    class_corr = {}
+    
+    for class_label in np.unique(label):
+        class_data = data[label == class_label]
+        class_corr[class_label] = np.corrcoef(class_data, rowvar=False)
+        
+    plot_corr(pearson_corr, 'Greys', 'Dataset')
+    plot_corr(class_corr[0], 'Blues', f'Class {0}')
+    plot_corr(class_corr[1], 'Reds', f'Class {1}')
+
+    
+def plot_corr(data, color , title):
+    plt.figure(figsize=(10, 8))
+    plt.imshow(data, cmap=color, interpolation='nearest', vmin=-0.3, vmax=1)
+    plt.title(title)
+    plt.colorbar()
+    plt.show()
 
 if __name__ == "__main__":
     data_train, label = load_train_data()
     # data plot for training set
-    #data_plot(data_train, label)
-    # LDA solver
+    plot_histogram(data_train, label)
     lda_solver(data_train, label)
-    
+    correlation_matrix(data_train, label)

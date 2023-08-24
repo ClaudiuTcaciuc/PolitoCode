@@ -58,45 +58,30 @@ def lda_solver (data, label, m = 1): # we are in a binary case so m = n_classes 
     
     # plot the LDA solution
     plot_histogram(new_data, label)
-    
-def plot_correlation_matrix(data_train, label):
-    # Calculate the Pearson correlation coefficients for the dataset features
-    correlation_matrix = np.corrcoef(data_train, rowvar=False)
 
-    plt.figure(figsize=(10, 8))
-    plt.imshow(correlation_matrix, cmap='gray_r', interpolation='nearest', vmin=-1, vmax=1)
-    plt.title("Correlation Matrix of Dataset Features")
-    plt.colorbar()
-    plt.xticks(np.arange(data_train.shape[1]), np.arange(1, data_train.shape[1] + 1))
-    plt.yticks(np.arange(data_train.shape[1]), np.arange(1, data_train.shape[1] + 1))
-    plt.show()
+def correlation_matrix (data, label):
+    pearson_corr = np.corrcoef(data, rowvar=False)
+    class_corr = {}
     
-def calculate_class_correlations(data, label):
-    unique_labels = np.unique(label)
-    class_correlations = {}
-
-    for class_label in unique_labels:
+    for class_label in np.unique(label):
         class_data = data[label == class_label]
-        correlation_matrix = np.corrcoef(class_data, rowvar=False)
-        class_correlations[class_label] = correlation_matrix
+        class_corr[class_label] = np.corrcoef(class_data, rowvar=False)
+        
+    plot_corr(pearson_corr, 'Greys', 'Dataset')
+    plot_corr(class_corr[0], 'Blues', f'Class {0}')
+    plot_corr(class_corr[1], 'Reds', f'Class {1}')
 
-    return class_correlations
-
-def plot_class_correlation_heatmaps(class_correlations):
-    for class_label, correlation_matrix in class_correlations.items():
-        plt.figure(figsize=(10, 8))
-        plt.imshow(correlation_matrix, cmap='coolwarm', interpolation='nearest', vmin=-1, vmax=1)
-        plt.title(f"Correlation Heatmap for Class {class_label}")
-        plt.colorbar()
-        plt.show()
+    
+def plot_corr(data, color , title):
+    plt.figure(figsize=(10, 8))
+    plt.imshow(data, cmap=color, interpolation='nearest', vmin=-0.3, vmax=1)
+    plt.title(title)
+    plt.colorbar()
+    plt.show()
 
 if __name__ == "__main__":
     data_train, label = load_train_data()
     # data plot for training set
     plot_histogram(data_train, label)
     lda_solver(data_train, label)
-    plot_correlation_matrix(data_train, label)
-    
-    #fix the heatmap
-    class_correlations = calculate_class_correlations(data_train, label)
-    plot_class_correlation_heatmaps(class_correlations)
+    correlation_matrix(data_train, label)
