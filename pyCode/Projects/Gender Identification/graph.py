@@ -1,17 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import scipy
-
-# Load the data from the file
-def load_train_data():
-    data_matrix = np.loadtxt("Train.txt", delimiter=",", usecols=range(0, 12))
-    data_label = np.loadtxt("Train.txt", delimiter=",", usecols=12, dtype=int)
-    return data_matrix, data_label
-
-def load_test_data():
-    data_matrix = np.loadtxt("Test.txt", delimiter=",", usecols=range(0, 12))
-    data_label = np.loadtxt("Test.txt", delimiter=",", usecols=12, dtype=int)
-    return data_matrix, data_label
+import numpy as np
 
 # Plot the scatter plot for each pair of features
 def plot_scatter(data_train, label):
@@ -23,7 +11,7 @@ def plot_scatter(data_train, label):
     num_features = data_train.shape[1]
     plt.figure(figsize=(16, 10))
     
-    for i in range(num_features - 1):
+    for i in range(3):
         for j in range(i + 1, num_features):
             plt.subplot(num_features - 1, num_features - 1, i * (num_features - 1) + j)
             plt.scatter(data_male[:, i], data_male[:, j], c='blue', label='Male', alpha=0.5, s=10)  # Adjust s (marker size)
@@ -62,7 +50,9 @@ def pca_solver(data, m):
     selected_eigenvectors = sorted_eigenvectors[:, :m]
     
     new_data = data_centered.dot(selected_eigenvectors)
-    
+    return new_data, eigenvalues
+
+def plot_pca_explained_variance(eigenvalues):
     # plot thge PCA - explained variance
     total_eigenvalues = np.sum(eigenvalues)
     var_exp = [(i / total_eigenvalues) for i in sorted(eigenvalues, reverse=True)]
@@ -92,39 +82,29 @@ def lda_solver (data, label, m = 1): # we are in a binary case so m = n_classes 
     new_data = np.real(new_data)
     
     # plot the LDA solution
-    plot_histogram(new_data, label)
+    return new_data
 
 # Compute the correlation matrix for the data and for each class
-def correlation_matrix (data, label):
+def correlation_matrix(data, label):
     pearson_corr = np.corrcoef(data, rowvar=False)
     class_corr = {}
     
     for class_label in np.unique(label):
         class_data = data[label == class_label]
         class_corr[class_label] = np.corrcoef(class_data, rowvar=False)
-        
-    plot_corr(pearson_corr, 'Greys', 'Dataset')
-    plot_corr(class_corr[0], 'Blues', f'Class {0}')
-    plot_corr(class_corr[1], 'Reds', f'Class {1}')
 
-def plot_corr(data, color , title):
-    plt.figure(figsize=(10, 8))
-    plt.imshow(data, cmap=color, interpolation='nearest', vmin=-0.3, vmax=1)
-    plt.title(title)
-    plt.colorbar()
+    # Create a figure with three subplots
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    # Plot the Pearson correlation matrix
+    plot_corr(pearson_corr, 'Greys', 'Dataset', axes[0])
+    plot_corr(class_corr[0], 'Blues', f'Class 0', axes[1])
+    plot_corr(class_corr[1], 'Reds', f'Class 1', axes[2])
+
+    plt.tight_layout()  # Ensures proper spacing between subplots
     plt.show()
 
-
-
-def MVG_classifier(data_train, label_train, data_test, label_test):
-    print("MVG Classifier")
-    
-if __name__ == "__main__":
-    data_train, label_train = load_train_data()
-    data_test, label_test = load_test_data()
-    # data plot for training set
-    # plot_histogram(data_train, label_train)
-    # lda_solver(data_train, label_train)
-    # correlation_matrix(data_train, label_train)
-    # pca_solver(data_train, 11)
-    MVG_classifier(data_train, label_train, data_test, label_test)
+def plot_corr(data, color, title, ax):
+    im = ax.imshow(data, cmap=color, interpolation='nearest', vmin=-0.3, vmax=1)
+    ax.set_title(title)
+    plt.colorbar(im, ax=ax)
